@@ -1,0 +1,15 @@
+name: Speedrunner
+version: ${project.version}
+main: org.github.brokenearthdev.manhunt.Speedrunner
+api-version: 1.16
+
+commands:
+  startgame:
+    usage: /<command>
+    description: starts the game
+  stopgame:
+    usage: /<command>
+    description: stops the game
+  profile:
+    usage: /<comand>
+    description: access the profile
