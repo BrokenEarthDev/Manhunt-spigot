@@ -6,27 +6,25 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.github.brokenearthdev.manhunt.ManhuntGame;
-import org.github.brokenearthdev.manhunt.Speedrunner;
 import org.github.brokenearthdev.manhunt.HunterTracker;
+import org.github.brokenearthdev.manhunt.ManhuntGame;
+import org.github.brokenearthdev.manhunt.ManhuntPlugin;
 import org.github.brokenearthdev.manhunt.SpeedrunnerUtils;
-import org.github.brokenearthdev.manhunt.revxrsal.BooleanButton;
-import org.github.brokenearthdev.manhunt.revxrsal.Button;
-import org.github.brokenearthdev.manhunt.revxrsal.GameMenu;
-import org.github.brokenearthdev.manhunt.revxrsal.ItemFactory;
+import org.github.brokenearthdev.manhunt.gui.ItemFactory;
+import org.github.brokenearthdev.manhunt.gui.buttons.BooleanButton;
+import org.github.brokenearthdev.manhunt.gui.buttons.Button;
+import org.github.brokenearthdev.manhunt.gui.menu.GameMenu;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SimpleTracker implements HunterTracker, Listener {
 
-    private Player hunter;
-    private ManhuntGame game;
+    private final Player hunter;
+    private final ManhuntGame game;
 
     private static final String COMPASS_NAME = ChatColor.GREEN + ChatColor.BOLD.toString() + "Player Tracker " +
             ChatColor.GOLD + ChatColor.BOLD.toString() + " | " + ChatColor.GREEN
@@ -38,7 +36,7 @@ public class SimpleTracker implements HunterTracker, Listener {
     public SimpleTracker(Player player, ManhuntGame game) {
         this.hunter = player;
         this.game = game;
-        Bukkit.getPluginManager().registerEvents(this, Speedrunner.getInstance());
+        Bukkit.getPluginManager().registerEvents(this, ManhuntPlugin.getInstance());
     }
 
     private boolean loc = true;
@@ -73,6 +71,7 @@ public class SimpleTracker implements HunterTracker, Listener {
     public void onSpawn(PlayerRespawnEvent event) {
         if (event.getPlayer().equals(hunter) && game != null && game.gameOngoing() && !game.gracePeriodOngoing()) {
             event.getPlayer().getInventory().addItem(COMPASS);
+            updateTracker();
         }
     }
 
@@ -85,6 +84,13 @@ public class SimpleTracker implements HunterTracker, Listener {
                     event.setCancelled(true);
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
+        if (game.gameOngoing() && !game.gracePeriodOngoing() && (event.getPlayer().equals(hunter)) || event.getPlayer().equals(tracked)) {
+            updateTracker();
         }
     }
 
@@ -126,13 +132,36 @@ public class SimpleTracker implements HunterTracker, Listener {
         menu.display(hunter);
     }
 
+    public void openTrackersInterface() {
+        if (game.gracePeriodOngoing() || !game.gameOngoing()) return;
+        int slots = 9;
+        List<HunterTracker> trackers = game.getHunterTrackers();
+        while (trackers.size() >= slots) {
+            slots *= 2;
+            if (slots >= 54) {
+                slots = 54;
+                break;
+            }
+        }
+        GameMenu menu = new GameMenu("Your Trackers", slots / 9);
+        for (int i = 0; i < trackers.size(); i++) {
+            if (!trackers.get(i).getHunter().equals(hunter) && Objects.equals(hunter, trackers.get(i).getTrackedPlayer())) {
+                menu.setButton(new Button(i, SpeedrunnerUtils.createPlayerHead(trackers.get(i).getHunter(), ChatColor.AQUA + trackers.get(i).getHunter().getName())));
+            }
+        }
+        menu.setButton(new Button(slots - 1, ItemFactory.create(Material.ARROW).setName(ChatColor.GREEN + "Previous Page").create())
+                .addAction(e -> openTrackingInterface()));
+        menu.setScenery(ItemFactory.create(Material.RED_STAINED_GLASS_PANE).setName(" ").create());
+        menu.display(hunter);
+    }
+
     @Override
     public void openTrackingInterface() {
         if (!game.gameOngoing() || game.gracePeriodOngoing()) return;
         GameMenu menu = new GameMenu("Tracker Settings", 6);
         menu.setButton(new Button(4, ItemFactory.create(Material.COMPASS).setName(ChatColor.YELLOW +
                 "Tracking Settings").create()));
-        menu.setButton(new Button(10, ItemFactory.create(SpeedrunnerUtils.createPlayerHead(game.getHunters().get(0),
+        menu.setButton(new Button(19, ItemFactory.create(SpeedrunnerUtils.createPlayerHead(game.getHunters().get(0),
                 ChatColor.GREEN + "Track Hunter(s)")).addLoreLine(ChatColor.GREEN + "Potential Hunter(s) Include(s): "
                 + ChatColor.RED + SpeedrunnerUtils.potentialHunterNames(game, hunter)).create()).addAction((e) -> {
             this.openHuntersInterface();
@@ -167,7 +196,7 @@ public class SimpleTracker implements HunterTracker, Listener {
                         }
                     }
                 }));
-        menu.setButton(new BooleanButton(23, true, (event, change) -> {
+        menu.setButton(new BooleanButton(23, actionBar, (event, change) -> {
             actionBar = change;
             hunter.sendMessage(change ? ChatColor.GREEN + "You can now see info in the actionbar" :
                     ChatColor.RED + "You can't see info in the actionbar");
@@ -177,7 +206,7 @@ public class SimpleTracker implements HunterTracker, Listener {
                 .setName(ChatColor.RED + "Actionbar: DISABLED").create()));
 
 
-        menu.setButton(new BooleanButton(24, true, (event, change) -> {
+        menu.setButton(new BooleanButton(24, loc, (event, change) -> {
             loc = change;
             if (loc) hunter.sendMessage(ChatColor.GREEN + "Tracking location");
             else hunter.sendMessage(ChatColor.GREEN + "Tracking health");
@@ -186,7 +215,7 @@ public class SimpleTracker implements HunterTracker, Listener {
                 .setName(ChatColor.RED + "Tracked: location").create(), ItemFactory.create(Material.APPLE)
                 .setName(ChatColor.GREEN + "Tracked: health").create()));
 
-        menu.setButton(new BooleanButton(25, true, (event, aBoolean) -> {
+        menu.setButton(new BooleanButton(25, autoCollect, (event, aBoolean) -> {
             autoCollect = aBoolean;
             hunter.sendMessage(ChatColor.GREEN + "Auto collect has been " + (aBoolean ? "enabled" : "disabled"));
             hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
@@ -195,14 +224,21 @@ public class SimpleTracker implements HunterTracker, Listener {
                 ItemFactory.create(Material.WOODEN_PICKAXE).setName(ChatColor.RED + "Auto Collect: DISABLED")
                         .create()));
 
-        menu.setButton(new BooleanButton(28, true, (event, aBoolean) -> {
+        menu.setButton(new BooleanButton(28, distance, (event, aBoolean) -> {
             distance = aBoolean;
             hunter.sendMessage(ChatColor.GREEN + "Tracking " + (aBoolean ? "distance" : "coordinates"));
             hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
         }, ItemFactory.create(Material.RAIL)
                 .setName(ChatColor.GREEN + "Location Tracked: DISTANCE").create(), ItemFactory.create(Material.MAP)
                 .setName(ChatColor.GREEN + "Location Tracked: COORDINATES").create()));
-        menu.setScenery(SpeedrunnerUtils.redGlass());
+        menu.setButton(new Button(33, ItemFactory.create(Material.BOW).setName(ChatColor.GREEN + "Your Trackers").create())
+                .addAction(event -> openTrackersInterface()));
+        ItemStack redGlass = SpeedrunnerUtils.redGlass();
+        menu.setButton(new Button(29, redGlass));
+        menu.setButton(new Button(30, redGlass));
+        menu.setButton(new Button(32, redGlass));
+        menu.setButton(new Button(34, redGlass));
+        //  menu.setScenery(ItemFactory.create(Material.BLACK_STAINED_GLASS_PANE).setName(" ").create());
         menu.display(hunter);
     }
 
@@ -281,6 +317,7 @@ public class SimpleTracker implements HunterTracker, Listener {
                         ChatColor.GREEN + ChatColor.BOLD.toString() + "Player Tracker" + ChatColor.GOLD + ChatColor.BOLD.toString()
                         + " | " + ChatColor.GREEN + ChatColor.BOLD.toString() + tracked.getName() + ": " + ((int) tracked.getHealth())
                 ));
+                return;
             }
             int x = (int) location.getX();
             int y = (int) location.getY();
@@ -295,8 +332,8 @@ public class SimpleTracker implements HunterTracker, Listener {
             hunter.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(
                     ChatColor.GREEN + ChatColor.BOLD.toString() + "Player Tracker" + ChatColor.GOLD +
                             ChatColor.BOLD.toString() + " | " + ChatColor.RED + ChatColor.BOLD.toString()
-                    + x + space + ChatColor.BLUE + ChatColor.BOLD.toString() + y + space + ChatColor.GREEN
-                    + ChatColor.BOLD + z + end
+                            + "X: " + x + space + ChatColor.BLUE + ChatColor.BOLD.toString() + "Y: " + y + space + ChatColor.GREEN
+                            + ChatColor.BOLD + "Z: " + z + end
             ));
         }
     }

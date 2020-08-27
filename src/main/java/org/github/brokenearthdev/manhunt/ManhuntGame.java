@@ -13,6 +13,8 @@ public interface ManhuntGame {
 
     List<Player> getIncludedPlayers();
 
+    List<HunterTracker> getHunterTrackers();
+
     /**
      * @return The hunter(s)
      */

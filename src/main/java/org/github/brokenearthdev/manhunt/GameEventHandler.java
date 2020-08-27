@@ -16,10 +16,10 @@ public class GameEventHandler implements Listener {
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player dead = event.getEntity();
-        ManhuntGame game = Speedrunner.getInstance().getRunningGame();
+        ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
         if (game != null && game.gameOngoing() && game.getIncludedPlayers().contains(dead)) {
             // in game
-            PlayerProfile profile = Speedrunner.getInstance().getProfile(dead);
+            PlayerProfile profile = ManhuntPlugin.getInstance().getProfile(dead);
             profile.setDeaths(profile.getDeaths() + 1);
 
             // check if speed runner
@@ -33,7 +33,7 @@ public class GameEventHandler implements Listener {
     public void onEntityDeath(EntityDeathEvent event) {
         if (event.getEntity().getType() == EntityType.ENDER_DRAGON) {
             // check whether speedrunner wins or not
-            ManhuntGame game = Speedrunner.getInstance().getRunningGame();
+            ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
             if (game != null && game.gameOngoing()) {
                 Player killer = event.getEntity().getKiller();
                 if (killer != null && killer.getWorld().equals(game.getEnd())) game.announceWin(false);
@@ -45,10 +45,10 @@ public class GameEventHandler implements Listener {
     public void onKill(EntityDeathEvent event) {
         if (event.getEntity() instanceof Player) {
             Player killer = event.getEntity().getKiller();
-            ManhuntGame game = Speedrunner.getInstance().getRunningGame();
+            ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
             if (killer != null && game.getIncludedPlayers().contains(killer) && game.gameOngoing()) {
                 // in game
-                PlayerProfile profile = Speedrunner.getInstance().getProfile(killer);
+                PlayerProfile profile = ManhuntPlugin.getInstance().getProfile(killer);
                 profile.setKills(profile.getKills() + 1);
             }
         }
@@ -58,8 +58,8 @@ public class GameEventHandler implements Listener {
     public void onPlayerDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player) {
             // player damaged
-            ManhuntGame game = Speedrunner.getInstance().getRunningGame();
-            if (Speedrunner.getInstance().isInGame((Player) event.getEntity()) && game.gracePeriodOngoing()) {
+            ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
+            if (ManhuntPlugin.getInstance().isInGame((Player) event.getEntity()) && game.gracePeriodOngoing()) {
                 event.setCancelled(true);
             }
         }
@@ -67,20 +67,23 @@ public class GameEventHandler implements Listener {
 
     @EventHandler
     public void onPortalEnter(PlayerPortalEvent event) {
-        if (Speedrunner.getInstance().getRunningGame() != null) {
-            ManhuntGame game = Speedrunner.getInstance().getRunningGame();
+        if (ManhuntPlugin.getInstance().getRunningGame() != null) {
+            ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
             if (game.gameOngoing() && game.getIncludedPlayers().contains(event.getPlayer())) {
                 Location to = event.getTo();
                 if (to != null && to.getWorld() != null) {
                     World world = to.getWorld();
                     World instead = null;
                     switch (world.getEnvironment()) {
-                        case NETHER: instead = game.getNetherWorld();
-                        case THE_END: instead = game.getEnd();
-                        case NORMAL: instead = game.getMainWorld();
+                        case NETHER:
+                            instead = game.getNetherWorld();
+                        case THE_END:
+                            instead = game.getEnd();
+                        case NORMAL:
+                            instead = game.getMainWorld();
                     }
                     if (instead == null) {
-                        Speedrunner.getInstance().getLogger().warning("Unable to warp player. The target world is " +
+                        ManhuntPlugin.getInstance().getLogger().warning("Unable to warp player. The target world is " +
                                 "null!");
                         return;
                     }

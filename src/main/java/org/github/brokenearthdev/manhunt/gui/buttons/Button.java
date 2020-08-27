@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.github.brokenearthdev.manhunt.revxrsal;
+package org.github.brokenearthdev.manhunt.gui.buttons;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -34,12 +34,12 @@ public class Button {
     /**
      * The item representing this button
      */
-    private ItemStack item;
+    protected ItemStack item;
 
     /**
      * The button slot
      */
-    private final int slot;
+    private int slot;
 
     /**
      * The click task
@@ -61,6 +61,10 @@ public class Button {
 
     public void setItem(ItemStack item) {
         this.item = item;
+    }
+
+    public void setSlot(int slot) {
+        this.slot = slot;
     }
 
     public Button addAction(Consumer<InventoryClickEvent> action) {

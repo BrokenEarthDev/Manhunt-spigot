@@ -1,6 +1,5 @@
 package org.github.brokenearthdev.manhunt.impl;
 
-import org.apache.commons.lang.reflect.FieldUtils;
 import org.bukkit.*;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -14,19 +13,22 @@ import java.util.Random;
 
 public class ManhuntGameImpl implements ManhuntGame {
 
-    private List<HunterTracker> trackers = new ArrayList<>();
+    private final List<HunterTracker> trackers = new ArrayList<>();
 
     private List<Player> hunters;
     private Player speedrunner;
-    private int gracePeriod = 30;
+    private final int gracePeriod;
     private int left;
-    private List<Player> inclPlayers;
-    private boolean allowGracePeriod = true;
+    private final List<Player> inclPlayers;
+    private final World main;
     private boolean gameOngoing = false;
     private boolean gracePeriodOngoing = false;
-    private World main, nether, end;
-    private GameOptions options;
+    private final World nether;
+    private final World end;
+    private final GameOptions options;
+    private boolean allowGracePeriod;
     private GameResults results;
+    private int speedrunnerLivedSeconds;
 
     public ManhuntGameImpl(Player speedrunner, List<Player> hunters, int gracePeriod, World main, World nether, World end,
                            List<Player> inclPlayers, GameOptions options) {
@@ -45,6 +47,11 @@ public class ManhuntGameImpl implements ManhuntGame {
     @Override
     public List<Player> getIncludedPlayers() {
         return new ArrayList<>(inclPlayers);
+    }
+
+    @Override
+    public List<HunterTracker> getHunterTrackers() {
+        return trackers;
     }
 
     @Override
@@ -90,13 +97,14 @@ public class ManhuntGameImpl implements ManhuntGame {
             Bukkit.getLogger().severe("Can't start a manhunt game. There are less than two players chosen");
             return;
         }
-        ManhuntGame running = Speedrunner.getInstance().getRunningGame();
+        ManhuntGame running = ManhuntPlugin.getInstance().getRunningGame();
         if (running == null || !running.equals(this))
-            Speedrunner.getInstance().setRunningGame(this);
+            ManhuntPlugin.getInstance().setRunningGame(this);
 
         this.gameOngoing = true;
         this.assignPlayerRoles();
         this.setupPlayers();
+        this.updateData();
         // display roles
         speedrunner.sendTitle(ChatColor.RED + "ROLE: SPEEDRUNNER", null, 10, 40, 15);
         hunters.forEach(h -> h.sendTitle(ChatColor.AQUA + "ROLE: HUNTER", null, 10, 40, 15));
@@ -107,10 +115,22 @@ public class ManhuntGameImpl implements ManhuntGame {
         this.startGracePeriod();
     }
 
+    private void updateData() {
+        getIncludedPlayers().forEach(player -> {
+            PlayerProfile profile = ManhuntPlugin.getInstance().getProfile(player);
+            if (hunters.contains(player))
+                profile.setTimesHunter(profile.getTimesHunter() + 1);
+            if (speedrunner.equals(player))
+                profile.setTimesSpeedrunner(profile.getTimesSpeedrunner() + 1);
+        });
+    }
+
     private void setupPlayers() {
         getIncludedPlayers().forEach(player -> player.teleport(main.getSpawnLocation()));
         getIncludedPlayers().forEach(player -> player.setHealth(20));
-        getIncludedPlayers().forEach(player -> player.setSaturation(20));;
+        getIncludedPlayers().forEach(player -> player.setSaturation(20));
+        getIncludedPlayers().forEach(player -> player.setFoodLevel(20));
+        getIncludedPlayers().forEach(player -> player.setGameMode(GameMode.SURVIVAL));
     }
 
     @Override
@@ -122,7 +142,7 @@ public class ManhuntGameImpl implements ManhuntGame {
         // temporarily hide the speedrunner
         inclPlayers.forEach(player -> {
             if (!player.equals(speedrunner)) {
-                player.hidePlayer(Speedrunner.getInstance(), speedrunner);
+                player.hidePlayer(ManhuntPlugin.getInstance(), speedrunner);
                 player.sendMessage(ChatColor.GREEN + "The speedrunner will remain hidden until the grace period" +
                         " ends (" + ChatColor.LIGHT_PURPLE + gracePeriod + ChatColor.GREEN + " seconds)");
             }
@@ -150,17 +170,34 @@ public class ManhuntGameImpl implements ManhuntGame {
                     // un-hide speedrunner
                     inclPlayers.forEach(player -> {
                         if (!player.equals(speedrunner)) {
-                            player.showPlayer(Speedrunner.getInstance(), speedrunner);
+                            player.showPlayer(ManhuntPlugin.getInstance(), speedrunner);
                             player.sendMessage(ChatColor.GREEN + "You can now see the speedrunner");
                         }
                     });
                     gracePeriodOngoing = false;
                     if (options.allowTrackers())
                         createTrackerEntries();
+                    // count speedrunner life
+                    countSpeedrunnerLife();
                     this.cancel();
                 }
             }
-        }.runTaskTimerAsynchronously(Speedrunner.getInstance(), 0, delay * 20);
+        }.runTaskTimer(ManhuntPlugin.getInstance(), 0, delay * 20);
+    }
+
+    private void countSpeedrunnerLife() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (!gameOngoing || ManhuntPlugin.getInstance().getRunningGame() == null) {
+                    this.cancel();
+                    return;
+                }
+                if (!gracePeriodOngoing) {
+                    speedrunnerLivedSeconds += 3;
+                }
+            }
+        }.runTaskTimer(ManhuntPlugin.getInstance(), 0, 60);
     }
 
     private void createTrackerEntries() {
@@ -177,7 +214,7 @@ public class ManhuntGameImpl implements ManhuntGame {
         inclPlayers.forEach(player -> player.sendMessage(ChatColor.RED + "Grace period cancelled"));
         inclPlayers.forEach(player -> {
             if (!player.equals(speedrunner)) {
-                player.showPlayer(Speedrunner.getInstance(), speedrunner);
+                player.showPlayer(ManhuntPlugin.getInstance(), speedrunner);
                 player.sendMessage(ChatColor.GREEN + "You can now see the speedrunner");
             }
         });
@@ -187,7 +224,7 @@ public class ManhuntGameImpl implements ManhuntGame {
     public void dumpToConfig() {
         long game = options.getGameID();
         if (game >= 0) {
-            YamlConfiguration config = Speedrunner.getInstance().getGameConfig();
+            YamlConfiguration config = ManhuntPlugin.getInstance().getGameConfig();
             List<String> uuidString = new ArrayList<>();
             hunters.forEach(hun -> uuidString.add(hun.getUniqueId().toString()));
             config.set("games.game#" + game + ".players.hunters", uuidString);
@@ -206,13 +243,25 @@ public class ManhuntGameImpl implements ManhuntGame {
 
     @Override
     public void stopGame() {
-        // remove compasses
-        HunterTracker.removeCompasses();
+        // remove trackers
+        if (options.allowTrackers())
+            HunterTracker.removeCompasses();
+
+        // add to avg times lived
+        PlayerProfile playerProfile = ManhuntPlugin.getInstance().getProfile(speedrunner);
+        double previousAvg = playerProfile.getAverageTimeSurvived();
+        int previousSpeedrunner = playerProfile.getTimesSpeedrunner() - 1;
+        int timesSpeedrunner = playerProfile.getTimesSpeedrunner();
+        double newAvg = ((double) previousSpeedrunner * previousAvg + (double) speedrunnerLivedSeconds)
+                / ((double) timesSpeedrunner);
+        playerProfile.setAvgTimeSurvived(newAvg);
+
         gameOngoing = false;
+        inclPlayers.forEach(player -> player.teleport(Bukkit.getWorld("world").getSpawnLocation()));
         trackers.clear();
         deleteWorldsIfApplicable();
         if (options.dumpInfoToConfig()) dumpToConfig();
-        Speedrunner.getInstance().setRunningGame(null); // no game running
+        ManhuntPlugin.getInstance().setRunningGame(null); // no game running
     }
 
     @Override
@@ -248,14 +297,30 @@ public class ManhuntGameImpl implements ManhuntGame {
             deleteWorld(end);
     }
 
+    private boolean deleteWorld(File path) {
+        if (path.exists()) {
+            File[] files = path.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                if (files[i].isDirectory()) {
+                    deleteWorld(files[i]);
+                } else {
+                    files[i].delete();
+                }
+            }
+        }
+        return (path.delete());
+    }
+
     private void deleteWorld(World world) {
         if (Bukkit.getServer().unloadWorld(world, false)) {
-            Speedrunner.getInstance().getLogger().fine("Successfully unloaded " + world.getName());
-            if (new File(world.getName()).delete())
-                Speedrunner.getInstance().getLogger().fine("Deleted world file");
-            else Speedrunner.getInstance().getLogger().warning("Can't delete world file. Please make sure to " +
+            ManhuntPlugin.getInstance().getLogger().fine("Successfully unloaded " + world.getName());
+            File file = world.getWorldFolder();
+            if (deleteWorld(file))
+                ManhuntPlugin.getInstance().getLogger().fine("Deleted world file");
+            else ManhuntPlugin.getInstance().getLogger().warning("Can't delete world file. Please make sure to " +
                     "remember to manually delete the world");
-        }
+        } else
+            ManhuntPlugin.getInstance().getLogger().warning("Can't unload world. Please make sure to delete it manually!");
     }
 
     @Override

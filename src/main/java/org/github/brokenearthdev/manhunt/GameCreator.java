@@ -17,16 +17,33 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class GameCreator {
 
-    private List<Player> includedPlayers = null;
+    private List<Player> includedPlayers = new ArrayList<>();
     private Player speedrunner;
     private List<Player> hunters;
     private World main, nether, end;
-    private int gracePeriod = 30;
-    private boolean dumpToConfig = false;
+    private int gracePeriod;
+    private boolean dumpToConfig;
     private boolean allowTrackers = true;
-    private boolean genWorld, genNether, genEnd = false;
-    private int maxPlayersCount = Integer.MAX_VALUE - 1;
-    private int minPlayersCount = 2;
+    private boolean genWorld, genNether, genEnd;
+    private int maxPlayersCount;
+    private int minPlayersCount;
+
+    public GameCreator(GameOptions options) {
+        gracePeriod = options.gracePeriodEnabled() ? options.gracePeriodSeconds() : 0;
+        dumpToConfig = options.dumpInfoToConfig();
+        dumpToConfig = options.allowTrackers();
+        genWorld = options.isGenerateMainWorld();
+        genNether = options.isGenerateNetherWorld();
+        genEnd = options.isGenerateEndWorld();
+        maxPlayersCount = options.getMaxPlayersCount() < 2 || options.getMaxPlayersCount() <
+                options.getMinimumPlayersCount() ? Integer.MAX_VALUE - 1 : options.getMaxPlayersCount();
+        minPlayersCount = options.getMinimumPlayersCount() < 2 || options.getMinimumPlayersCount() >
+                options.getMaxPlayersCount() ? 2 : options.getMinimumPlayersCount();
+    }
+
+    public GameCreator() {
+        this(ManhuntPlugin.getInstance().getDefaultOptions());
+    }
 
     private boolean checkInclude(Player player) {
         if (includedPlayers != null && includedPlayers.contains(player)) return true;
@@ -63,6 +80,13 @@ public class GameCreator {
         if (hunters == null)
             hunters = new ArrayList<>(1);
         hunters.add(player);
+        return this;
+    }
+
+    public GameCreator removeHunter(Player player) {
+        includedPlayers.remove(player);
+        if (hunters != null)
+            hunters.remove(player);
         return this;
     }
 
@@ -189,8 +213,8 @@ public class GameCreator {
         modifyIncludedPlayersList(minPlayersCount, maxPlayersCount);
 
         GameOptions options = new GameOptionsImpl(
-                gracePeriod > 0, allowTrackers, genWorld, genNether, genEnd ,
-                dumpToConfig, maxPlayersCount, minPlayersCount, gracePeriod, main, nether, end
+                gracePeriod > 0, allowTrackers, genWorld, genNether, genEnd,
+                dumpToConfig, maxPlayersCount, minPlayersCount, gracePeriod
         );
         return new ManhuntGameImpl(speedrunner, hunters, gracePeriod, main, nether, end, includedPlayers, options);
     }
@@ -222,8 +246,9 @@ public class GameCreator {
         }
         if (bukkitPlayers.size() < includedPlayers.size()) {
             // server player count less than included players
-            this.minPlayersCount = includedPlayers.size();
-            this.maxPlayersCount = includedPlayers.size();
+            this.minPlayersCount = bukkitPlayers.size();
+            this.maxPlayersCount = bukkitPlayers.size();
+            this.includedPlayers = bukkitPlayers;
             modifyIncludedPlayersList(bukkitPlayers.size(), bukkitPlayers.size());
             return;
         }
@@ -242,7 +267,7 @@ public class GameCreator {
                     list.add(bukkitPlayers.get(i));
             }
         }
-        if (list.size() > size){
+        if (list.size() > size) {
             for (int i = 0; i < bukkitPlayers.size(); i++) {
                 if (bukkitPlayers.size() == list.size()) break;
                 list.remove(bukkitPlayers.get(i));

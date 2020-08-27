@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.github.brokenearthdev.manhunt.revxrsal;
+package org.github.brokenearthdev.manhunt.gui.menu;
 
 import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.inventory.*;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.github.brokenearthdev.manhunt.gui.buttons.Button;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,20 +132,11 @@ public class GameMenu {
         return inventory;
     }
 
+    private static final Map<InventoryHolder, GameMenu> OPEN_MENUS = new HashMap<>();
+
     public void display(HumanEntity entity) {
         entity.openInventory(createInventory());
-    }
-
-    public void updateInventory(Player player) {
-        // assume player has the menu open
-        Inventory inventory = player.getOpenInventory().getTopInventory();
-        buttons.forEach((slot, button) -> inventory.setItem(slot, button.getItem()));
-        if (scenery != null) {
-            for (int i = 0; i < inventory.getSize(); i++) {
-                if (inventory.getItem(i) == null) inventory.setItem(i, scenery);
-            }
-        }
-        player.updateInventory();
+        OPEN_MENUS.put(entity, this);
     }
 
     /**
@@ -155,7 +145,7 @@ public class GameMenu {
      * @param event Event
      */
     protected void onClick(InventoryClickEvent event) {
-        if (event.getAction().name().contains("MOVE_"))
+        if (event.getAction() != InventoryAction.NOTHING)
             event.setCancelled(true);
         if (event.getRawSlot() > event.getInventory().getSize() || event.getSlotType() == InventoryType.SlotType.OUTSIDE)
             return;
@@ -175,7 +165,15 @@ public class GameMenu {
         if (button != null && button.getOnClick() != null) button.getOnClick().forEach(task -> task.accept(event));
     }
 
+    public int getSize() {
+        return size;
+    }
+
     private static final Map<IntPredicate, Integer> SLOT_SIZE = new HashMap<>();
+
+    public String getTitle() {
+        return title;
+    }
 
     private static boolean isBetween(int a, int b, int test) {
         return test >= a && test <= b;
@@ -183,6 +181,10 @@ public class GameMenu {
 
     public static int getAppropriateSize(int size) {
         return SLOT_SIZE.entrySet().stream().filter(e -> e.getKey().test(size)).findFirst().map(Entry::getValue).orElse(6);
+    }
+
+    public ItemStack getScenery() {
+        return scenery.clone();
     }
 
     static {
@@ -194,18 +196,46 @@ public class GameMenu {
         SLOT_SIZE.put((v) -> isBetween(46, 54, v), 6);
     }
 
-    public class MenuListener implements Listener {
+    public static class MenuListener implements Listener {
 
         @EventHandler(ignoreCancelled = true)
         public void onInventoryClick(InventoryClickEvent event) {
-            if (event.getInventory().getSize() == size && event.getView().getTitle().equals(title))
-                GameMenu.this.onClick(event);
+            GameMenu openMenu = OPEN_MENUS.get(event.getWhoClicked());
+            if (openMenu != null) {
+                Inventory inv = event.getView().getTopInventory();
+                boolean open = inv.getSize() == openMenu.size && event.getView().getTitle().equals(openMenu.title);
+                if (open) {
+                    openMenu.onClick(event);
+                }
+            }
         }
 
         @EventHandler(ignoreCancelled = true)
         public void onInventoryClose(InventoryCloseEvent event) {
-            if (event.getInventory().getSize() == size && event.getView().getTitle().equals(title))
-                    GameMenu.this.closeActions.forEach(a -> a.accept(event));
+            GameMenu openMenu = OPEN_MENUS.get(event.getPlayer());
+            if (openMenu != null) {
+                Inventory inv = event.getView().getTopInventory();
+                boolean open = inv.getSize() == openMenu.size && event.getView().getTitle().equals(openMenu.title);
+                if (open)
+                    openMenu.closeActions.forEach(a -> a.accept(event));
+                OPEN_MENUS.remove(event.getPlayer());
+            }
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        public void onItemMove(InventoryMoveItemEvent event) {
+            Inventory inv = event.getDestination();
+            InventoryHolder holder = event.getSource().getHolder();
+            if (holder == null) return;
+            GameMenu menu = OPEN_MENUS.get(holder);
+            if (menu != null) {
+                if (holder.getInventory().getViewers().size() != 0) {
+                    String title = holder.getInventory().getViewers().get(0).getOpenInventory().getTitle();
+                    boolean open = inv.getSize() == menu.size && title.equals(menu.title);
+                    if (open) event.setCancelled(true);
+                }
+            }
         }
     }
+
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.github.brokenearthdev.manhunt.revxrsal;
+package org.github.brokenearthdev.manhunt.gui.buttons;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -38,13 +38,14 @@ public class BooleanButton extends Button {
      * @param offItem The item to toggle the button off
      */
     public BooleanButton(int slot, boolean on, BiConsumer<InventoryClickEvent, Boolean> stateChange, ItemStack onItem, ItemStack offItem) {
-        super(slot, on ? offItem : onItem);
+        super(slot, on ? onItem : offItem);
         state = on;
         addAction(CANCEL_ACTION);
         addAction(event -> {
             state = !state;
             stateChange.accept(event, state);
-            event.setCurrentItem(state ? offItem : onItem);
+            event.setCurrentItem(state ? onItem : offItem);
+            item = state ? onItem : offItem;
         });
     }
 

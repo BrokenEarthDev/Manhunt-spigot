@@ -1,4 +1,4 @@
-package org.github.brokenearthdev.manhunt.revxrsal;
+package org.github.brokenearthdev.manhunt.gui;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -9,7 +9,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
-import org.github.brokenearthdev.manhunt.Speedrunner;
+import org.github.brokenearthdev.manhunt.ManhuntPlugin;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -139,7 +139,6 @@ public class ItemFactory {
      */
     public ItemFactory addEnchantments(Map<Enchantment, Integer> enchantments) {
         if (enchantments == null) return this;
-        ;
         enchantments.forEach((e, p) -> im.addEnchant(e, p, true));
         is.setItemMeta(im);
         return this;
@@ -249,7 +248,7 @@ public class ItemFactory {
             im.setColor(color);
             is.setItemMeta(im);
         } catch (ClassCastException e) {
-            Speedrunner.getInstance().getLogger().warning(e.getMessage());
+            ManhuntPlugin.getInstance().getLogger().warning(e.getMessage());
         }
         return this;
     }

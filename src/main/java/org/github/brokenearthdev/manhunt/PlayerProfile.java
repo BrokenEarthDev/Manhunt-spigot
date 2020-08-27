@@ -13,7 +13,7 @@ public class PlayerProfile {
     /**
      * Offline player instance
      */
-    private OfflinePlayer player;
+    private final OfflinePlayer player;
 
     /**
      * The player's kills
@@ -40,15 +40,11 @@ public class PlayerProfile {
      */
     private int timesHunter;
 
-    /**
-     * The total games played
-     */
-    private int totalGamesPlayed;
 
-    private YamlConfiguration config;
+    private final YamlConfiguration config;
 
     /**
-     * It is generally recommended to access {@link Speedrunner#getProfile(Player)}.
+     * It is generally recommended to access {@link ManhuntPlugin#getProfile(Player)}.
      * This will help reduce the number of objects created and help increase reliability.
      * There is no need to access {@link #saveValues()} (as well as {@link #refresh()})
      * if this object was retrieved from the aforementioned function.
@@ -63,7 +59,7 @@ public class PlayerProfile {
     }
 
     /**
-     * It is generally recommended to access {@link Speedrunner#getProfile(Player)}.
+     * It is generally recommended to access {@link ManhuntPlugin#getProfile(Player)}.
      * This will help reduce the number of objects created and help increase reliability.
      * There is no need to access {@link #saveValues()} (as well as {@link #refresh()})
      * if this object was retrieved from the aforementioned function.
@@ -71,7 +67,7 @@ public class PlayerProfile {
      * @param player The player
      */
     public PlayerProfile(OfflinePlayer player) {
-        this(player, Speedrunner.getInstance().getPlayerConfig());
+        this(player, ManhuntPlugin.getInstance().getPlayerConfig());
     }
 
     /**
@@ -83,7 +79,6 @@ public class PlayerProfile {
         this.avgTimeSurvived = config.getDouble(player.getUniqueId() + ".avgTimeSurvived");
         this.timesSpeedrunner = config.getInt(player.getUniqueId() + ".speedrunner");
         this.timesHunter = config.getInt(player.getUniqueId() + ".hunter");
-        this.totalGamesPlayed = timesSpeedrunner + timesHunter;
     }
 
     /**
@@ -175,7 +170,7 @@ public class PlayerProfile {
      * @return The total games played
      */
     public int getTotalGamesPlayed() {
-        return totalGamesPlayed;
+        return getTimesHunter() + getTimesSpeedrunner();
     }
 
     /**

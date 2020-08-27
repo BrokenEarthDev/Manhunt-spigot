@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.github.brokenearthdev.manhunt.revxrsal;
+package org.github.brokenearthdev.manhunt.gui.buttons;
 
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;

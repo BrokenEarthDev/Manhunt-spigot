@@ -1,12 +1,7 @@
 package org.github.brokenearthdev.manhunt.impl;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.github.brokenearthdev.manhunt.GameOptions;
-import org.github.brokenearthdev.manhunt.Speedrunner;
-
-import java.util.*;
-import java.util.stream.IntStream;
+import org.github.brokenearthdev.manhunt.ManhuntPlugin;
 
 public class GameOptionsImpl implements GameOptions {
 
@@ -20,13 +15,10 @@ public class GameOptionsImpl implements GameOptions {
     private int minPlayers = 2;
     private int gracePeriod = 30;
     private long gameID = -1;
-    private World main = Bukkit.getWorld("world");
-    private World nether = Bukkit.getWorld("world_nether");
-    private World end = Bukkit.getWorld("world_the_end");
 
     public GameOptionsImpl(boolean gracePeriodEnabled, boolean allowTrackers, boolean generateMainWorld,
                            boolean generateNetherWorld, boolean generateEnd, boolean dumpToConfig,
-                           int maxPlayers, int minPlayers, int gracePeriod, World main, World nether, World end) {
+                           int maxPlayers, int minPlayers, int gracePeriod) {
         this.gracePeriodEnabled = gracePeriodEnabled;
         this.allowTrackers = allowTrackers;
         this.generateMainWorld = generateMainWorld;
@@ -36,12 +28,9 @@ public class GameOptionsImpl implements GameOptions {
         this.maxPlayers = maxPlayers;
         this.minPlayers = minPlayers;
         this.gracePeriod = gracePeriod;
-        this.main = main;
-        this.nether = nether;
-        this.end = end;
         if (dumpToConfig) {
-            Speedrunner.getInstance().incrementLargestID();
-            gameID = Speedrunner.getInstance().getLargestGameID();
+            ManhuntPlugin.getInstance().incrementLargestID();
+            gameID = ManhuntPlugin.getInstance().getLargestGameID();
         }
     }
 
@@ -90,21 +79,6 @@ public class GameOptionsImpl implements GameOptions {
     @Override
     public long getGameID() {
         return gameID;
-    }
-
-    @Override
-    public World getMainWorld() {
-        return main;
-    }
-
-    @Override
-    public World getNetherWorld() {
-        return nether;
-    }
-
-    @Override
-    public World getEndWorld() {
-        return end;
     }
 
     @Override

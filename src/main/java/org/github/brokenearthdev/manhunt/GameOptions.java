@@ -1,7 +1,5 @@
 package org.github.brokenearthdev.manhunt;
 
-import org.bukkit.World;
-
 /**
  * An immutable interface storing the game options
  */
@@ -53,20 +51,6 @@ public interface GameOptions {
      */
     long getGameID();
 
-    /**
-     * @return The main world
-     */
-    World getMainWorld();
-
-    /**
-     * @return The nether world
-     */
-    World getNetherWorld();
-
-    /**
-     * @return The end world
-     */
-    World getEndWorld();
 
     /**
      * @return The grace period in seconds (or 0 if the grace period isn't

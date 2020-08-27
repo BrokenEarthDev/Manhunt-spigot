@@ -1,15 +1,29 @@
 name: Speedrunner
 version: ${project.version}
-main: org.github.brokenearthdev.manhunt.Speedrunner
+main: org.github.brokenearthdev.manhunt.ManhuntPlugin
 api-version: 1.16
 
 commands:
-  startgame:
+  mhstart:
     usage: /<command>
     description: starts the game
-  stopgame:
+  mhstop:
     usage: /<command>
     description: stops the game
-  profile:
+  mhprofile:
     usage: /<comand>
     description: access the profile
+
+permissions:
+  manhunt.game.options:
+    description: Allows players to access and customize game settings
+    default: op
+  manhunt.game.start:
+    description: Allows players to access the /mhstart command
+    default: op
+  manhunt.game.stop:
+    description: Allows players to access the /mhstop command
+    default: op
+  manhunt.profile:
+    description: Allows players to access the /mhprofile command
+    default: true

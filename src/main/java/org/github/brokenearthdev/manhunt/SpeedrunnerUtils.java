@@ -1,13 +1,17 @@
 package org.github.brokenearthdev.manhunt;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.MemorySection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.github.brokenearthdev.manhunt.revxrsal.ItemFactory;
+import org.github.brokenearthdev.manhunt.gui.ItemFactory;
 
+import java.io.File;
 import java.util.*;
 
 public class SpeedrunnerUtils {
@@ -29,9 +33,19 @@ public class SpeedrunnerUtils {
 
     public static ItemStack createPlayerHead(Player owningPlayer, String name) {
         ItemStack stack = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
-        SkullMeta meta = (SkullMeta) stack;
+        SkullMeta meta = (SkullMeta) stack.getItemMeta();
         meta.setDisplayName(name);
         meta.setOwningPlayer(owningPlayer);
+        stack.setItemMeta(meta);
+        return stack;
+    }
+
+    public static ItemStack createPlayerHead(Player owningPlayer, String name, String lore) {
+        ItemStack stack = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
+        SkullMeta meta = (SkullMeta) stack.getItemMeta();
+        meta.setDisplayName(name);
+        meta.setOwningPlayer(owningPlayer);
+        meta.setLore(Collections.singletonList(lore));
         stack.setItemMeta(meta);
         return stack;
     }
@@ -53,9 +67,9 @@ public class SpeedrunnerUtils {
     }
 
     public static final int findLargestID() {
-        Map<String, Object> values = Speedrunner.getInstance().getGameConfig().getValues(true);
+        Map<String, Object> values = ManhuntPlugin.getInstance().getGameConfig().getValues(true);
         if (values.get("games") == null) return -1;
-        Set<String> under = ((Map<String, Object>) values.get("games")).keySet();
+        Set<String> under = ((MemorySection) values.get("games")).getKeys(false);
         List<Integer> integerList = new ArrayList<>();
         for (String string : under) {
             integerList.add(Integer.valueOf(string.substring(5)));
@@ -66,6 +80,48 @@ public class SpeedrunnerUtils {
             Collections.reverse(integerList);
             return integerList.get(0) + 1;
         }
+    }
+
+    public static boolean deleteFiles(File file) {
+        if (file.isDirectory()) {
+            File[] sub = file.listFiles();
+            for (File file1 : sub) {
+                deleteFiles(file1);
+            }
+        } else return file.delete();
+        return file.delete();
+    }
+
+    public static List<World> getNormalWorlds() {
+        List<World> overworld = new ArrayList<>();
+        Bukkit.getWorlds().forEach(world -> {
+            if (world.getEnvironment() == World.Environment.NORMAL)
+                overworld.add(world);
+        });
+        return overworld;
+    }
+
+    public static List<World> getNetherWorlds() {
+        List<World> netherWorlds = new ArrayList<>();
+        Bukkit.getWorlds().forEach(world -> {
+            if (world.getEnvironment() == World.Environment.NETHER)
+                netherWorlds.add(world);
+        });
+        return netherWorlds;
+    }
+
+    public static List<World> getEndWorlds() {
+        List<World> endWorlds = new ArrayList<>();
+        Bukkit.getWorlds().forEach(world -> {
+            if (world.getEnvironment() == World.Environment.THE_END)
+                endWorlds.add(world);
+        });
+        return endWorlds;
+    }
+
+    public static int closest(int num, int a, int b) {
+        if (Math.abs(num - a) < Math.abs(num - b)) return a;
+        else return b;
     }
 
 }

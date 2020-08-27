@@ -1,4 +1,4 @@
-package org.github.brokenearthdev.manhunt.revxrsal;
+package org.github.brokenearthdev.manhunt.gui.buttons;
 
 /**
  * A simple binder

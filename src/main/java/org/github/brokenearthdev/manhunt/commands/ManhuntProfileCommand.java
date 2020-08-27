@@ -3,44 +3,42 @@ package org.github.brokenearthdev.manhunt.commands;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.github.brokenearthdev.manhunt.ManhuntPlugin;
 import org.github.brokenearthdev.manhunt.PlayerProfile;
-import org.github.brokenearthdev.manhunt.Speedrunner;
 import org.github.brokenearthdev.manhunt.SpeedrunnerUtils;
-import org.github.brokenearthdev.manhunt.revxrsal.Button;
-import org.github.brokenearthdev.manhunt.revxrsal.GameMenu;
-import org.github.brokenearthdev.manhunt.revxrsal.ItemFactory;
+import org.github.brokenearthdev.manhunt.gui.ItemFactory;
+import org.github.brokenearthdev.manhunt.gui.buttons.Button;
+import org.github.brokenearthdev.manhunt.gui.menu.GameMenu;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
-public class ProfileCommand implements CommandExecutor {
+/**
+ * Manhunt profile command handler
+ */
+public class ManhuntProfileCommand extends ManhuntCommand {
+
+    public ManhuntProfileCommand() {
+        super("/mhprofile or /mhprofile player", "manhunt.profile", true, 0, 1);
+    }
+
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "Sorry, only players can access this command!");
-            return true;
-        }
-        if (args.length > 1) {
-            sender.sendMessage(ChatColor.RED + "Invalid usage. Use /profile <name>");
-            return true;
-        }
+    public void handleCommand(@NotNull CommandSender sender, String[] args) {
         Player player = args.length == 1 ? Bukkit.getPlayer(args[0]) : (Player) sender;
         if (player == null) {
             sender.sendMessage(ChatColor.RED + "Can't find an online player with that name!");
-            return true;
+        } else {
+            openProfileInterface((Player) sender, player);
         }
-        openProfileInterface((Player) sender, player);
-        return true;
     }
 
     private void openProfileInterface(Player player, Player target) {
-        PlayerProfile profile = Speedrunner.getInstance().getProfile(target);
-        String kdrString = String.format(ChatColor.GREEN + "Kill/Death ratio: " + ChatColor.RED + "%.2f", ((float)profile.getKills() / (float)profile.getDeaths()));
+        PlayerProfile profile = ManhuntPlugin.getInstance().getProfile(target);
+        String kdrString = String.format(ChatColor.GREEN + "Kill/Death ratio: " + ChatColor.RED + "%.2f", ((float) profile.getKills() / (float) profile.getDeaths()));
         GameMenu menu = new GameMenu(ChatColor.GOLD + ChatColor.BOLD.toString() + player.getName() + "'s profile", 6);
         menu.setButton(new Button(4, ItemFactory.create(
                 SpeedrunnerUtils.createPlayerHead(target, ChatColor.GREEN + player.getName()))
