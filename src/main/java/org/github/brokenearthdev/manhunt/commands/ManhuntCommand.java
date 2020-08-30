@@ -51,9 +51,11 @@ public abstract class ManhuntCommand implements CommandExecutor {
      * @return Whether the sender has the permission or not
      */
     protected boolean checkPermission(CommandSender sender, String permission) {
-        if (!sender.hasPermission(permission)) {
-            sender.sendMessage(ChatColor.RED + "You do not have permission to access this command");
-            return false;
+        if (permission != null) {
+            if (!sender.hasPermission(permission)) {
+                sender.sendMessage(ChatColor.RED + "You do not have permission to access this command");
+                return false;
+            }
         }
         return true;
     }
@@ -71,9 +73,7 @@ public abstract class ManhuntCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.RED + "Sorry, only players can execute the command!");
             return true;
         }
-        if (permission != null)
-            return checkPermission(sender, permission);
-        return true;
+        return checkPermission(sender, permission);
     }
 
     /**

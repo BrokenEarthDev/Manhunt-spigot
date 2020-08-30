@@ -16,6 +16,9 @@ commands:
   mhtracker:
     usage: /<command>
     description: gives a tracker to the hunter if, for some reason, the hunter doesn't have a compass
+  mhtp:
+    usage: /<command>
+    description: teleports players to a world with the specified type
 
 permissions:
   manhunt.game.options:
@@ -26,6 +29,9 @@ permissions:
     default: op
   manhunt.game.stop:
     description: Allows players to access the /mhstop command
+    default: op
+  manhunt.game.worldtp:
+    description: Allows players to access the /mhworld command
     default: op
   manhunt.profile:
     description: Allows players to access the /mhprofile command

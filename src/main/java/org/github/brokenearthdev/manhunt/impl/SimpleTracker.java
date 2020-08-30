@@ -27,8 +27,6 @@ public class SimpleTracker implements HunterTracker, Listener {
     private final Player hunter;
     private final ManhuntGame game;
 
-
-
     private static final ItemStack COMPASS = ItemFactory.create(Material.COMPASS)
             .setName(COMPASS_NAME).setUnbreakable(true).create();
 
@@ -58,11 +56,13 @@ public class SimpleTracker implements HunterTracker, Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         ItemStack stack = event.getItem();
-        if (game != null && stack != null && stack.getItemMeta() != null) {
-            ItemMeta meta = stack.getItemMeta();
-            if (game.gameOngoing() && !game.gracePeriodOngoing() && meta.getDisplayName().equals(COMPASS_NAME)
-                    && stack.getType() == Material.COMPASS) {
-                openTrackingInterface();
+        if (!event.getPlayer().equals(hunter)) {
+            if (game != null && stack != null && stack.getItemMeta() != null) {
+                ItemMeta meta = stack.getItemMeta();
+                if (game.gameOngoing() && !game.gracePeriodOngoing() && meta.getDisplayName().equals(COMPASS_NAME)
+                        && stack.getType() == Material.COMPASS) {
+                    openTrackingInterface();
+                }
             }
         }
     }
