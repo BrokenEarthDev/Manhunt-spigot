@@ -22,11 +22,9 @@ public class ManhuntTrackerCommand extends ManhuntCommand {
     @Override
     public void handleCommand(@NotNull CommandSender sender, String[] args) {
         ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
-        if (game != null) {
+        if (game != null && game.gameOngoing() && !game.gracePeriodOngoing()) {
             Player player = (Player) sender;
             if (!game.getHunters().contains(player)) {
-
-
                 player.sendMessage(ChatColor.RED + "You need to be the hunter to get the tracker!");
                 return;
             }
@@ -51,7 +49,9 @@ public class ManhuntTrackerCommand extends ManhuntCommand {
             }
             playerTracker.giveCompass();
             player.sendMessage(ChatColor.GREEN + "Done! You now have your tracker.");
-        } else sender.sendMessage(ChatColor.RED + "A game isn't running right now!");
+        } else if (game == null || !game.gameOngoing())
+            sender.sendMessage(ChatColor.RED + "A game isn't running right now!");
+        else if (game.gracePeriodOngoing()) sender.sendMessage(ChatColor.RED + "You are currently in a grace period!");
 
     }
 }

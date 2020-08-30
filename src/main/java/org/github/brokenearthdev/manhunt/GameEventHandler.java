@@ -11,6 +11,9 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 
+/**
+ * An event handler for the game
+ */
 public class GameEventHandler implements Listener {
 
     @EventHandler
@@ -30,7 +33,7 @@ public class GameEventHandler implements Listener {
     }
 
     @EventHandler
-    public void onEntityDeath(EntityDeathEvent event) {
+    public void onDragonKill(EntityDeathEvent event) {
         if (event.getEntity().getType() == EntityType.ENDER_DRAGON) {
             // check whether speedrunner wins or not
             ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
@@ -100,15 +103,4 @@ public class GameEventHandler implements Listener {
             }
         }
     }
-
-    @EventHandler
-    public void onDragonKill(EntityDeathEvent event) {
-        if (event.getEntityType() == EntityType.ENDER_DRAGON) {
-            ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
-            if (game != null && game.gameOngoing()) {
-                game.announceWin(false);
-            }
-        }
-    }
-
 }

@@ -5,14 +5,10 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityPickupItemEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.github.brokenearthdev.manhunt.HunterTracker;
 import org.github.brokenearthdev.manhunt.ManhuntGame;
-import org.github.brokenearthdev.manhunt.ManhuntPlugin;
 import org.github.brokenearthdev.manhunt.ManhuntUtils;
 import org.github.brokenearthdev.manhunt.gui.ItemFactory;
 import org.github.brokenearthdev.manhunt.gui.buttons.BooleanButton;
@@ -22,7 +18,7 @@ import org.github.brokenearthdev.manhunt.gui.menu.GameMenu;
 import java.util.List;
 import java.util.Objects;
 
-public class SimpleTracker implements HunterTracker, Listener {
+public class AdvancedTracker implements HunterTracker {
 
     private final Player hunter;
     private final ManhuntGame game;
@@ -30,10 +26,9 @@ public class SimpleTracker implements HunterTracker, Listener {
     private static final ItemStack COMPASS = ItemFactory.create(Material.COMPASS)
             .setName(COMPASS_NAME).setUnbreakable(true).create();
 
-    public SimpleTracker(Player player, ManhuntGame game) {
+    public AdvancedTracker(Player player, ManhuntGame game) {
         this.hunter = player;
         this.game = game;
-        Bukkit.getPluginManager().registerEvents(this, ManhuntPlugin.getInstance());
     }
 
     private boolean loc = true;
@@ -53,56 +48,64 @@ public class SimpleTracker implements HunterTracker, Listener {
         }
     }
 
-    @EventHandler
-    public void onInteract(PlayerInteractEvent event) {
-        ItemStack stack = event.getItem();
-        if (!event.getPlayer().equals(hunter)) {
-            if (game != null && stack != null && stack.getItemMeta() != null) {
-                ItemMeta meta = stack.getItemMeta();
-                if (game.gameOngoing() && !game.gracePeriodOngoing() && meta.getDisplayName().equals(COMPASS_NAME)
-                        && stack.getType() == Material.COMPASS) {
-                    openTrackingInterface();
-                }
-            }
-        }
+    public void setTrackedPortalLocation(Location sr) {
+        lastPortalLocation = sr;
     }
 
-    @EventHandler
-    public void onSpawn(PlayerRespawnEvent event) {
-        if (event.getPlayer().equals(hunter) && game != null && game.gameOngoing() && !game.gracePeriodOngoing()) {
-            event.getPlayer().getInventory().addItem(COMPASS);
-            updateTracker();
-        }
+    public void setPersonalPortalLocation(Location hpl) {
+        hunterPortalLocation = hpl;
     }
 
-    @EventHandler
-    public void onCollect(EntityPickupItemEvent event) {
-        if (game == null) return;
-        if (game.gameOngoing() && !game.gracePeriodOngoing() && event.getItem().getItemStack().hasItemMeta()) {
-            String displayName = event.getItem().getItemStack().getItemMeta().getDisplayName();
-            if (!event.getEntity().equals(hunter) && displayName.equalsIgnoreCase(COMPASS_NAME))
-                event.setCancelled(true);
-        }
-    }
-
-    @EventHandler
-    public void onDrop(PlayerDropItemEvent event) {
-        if (game.gameOngoing() && !game.gracePeriodOngoing() && event.getPlayer().equals(hunter) && autoCollect) {
-            if (event.getItemDrop().getItemStack().getType() == Material.COMPASS) {
-                ItemStack stack = event.getItemDrop().getItemStack();
-                if (stack.getItemMeta() != null && stack.getItemMeta().getDisplayName().equals(COMPASS_NAME)) {
-                    event.setCancelled(true);
-                }
-            }
-        }
-    }
-
-    @EventHandler
-    public void onMove(PlayerMoveEvent event) {
-        if (game.gameOngoing() && !game.gracePeriodOngoing() && (event.getPlayer().equals(hunter)) || event.getPlayer().equals(tracked)) {
-            updateTracker();
-        }
-    }
+//    @EventHandler
+//    public void onInteract(PlayerInteractEvent event) {
+//        ItemStack stack = event.getItem();
+//        if (!event.getPlayer().equals(hunter)) {
+//            if (game != null && stack != null && stack.getItemMeta() != null) {
+//                ItemMeta meta = stack.getItemMeta();
+//                if (game.gameOngoing() && !game.gracePeriodOngoing() && meta.getDisplayName().equals(COMPASS_NAME)
+//                        && stack.getType() == Material.COMPASS) {
+//                    openTrackingInterface();
+//                }
+//            }
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onSpawn(PlayerRespawnEvent event) {
+//        if (event.getPlayer().equals(hunter) && game != null && game.gameOngoing() && !game.gracePeriodOngoing()) {
+//            event.getPlayer().getInventory().addItem(COMPASS);
+//            updateTracker();
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onCollect(EntityPickupItemEvent event) {
+//        if (game == null) return;
+//        if (game.gameOngoing() && !game.gracePeriodOngoing() && event.getItem().getItemStack().hasItemMeta()) {
+//            String displayName = event.getItem().getItemStack().getItemMeta().getDisplayName();
+//            if (!event.getEntity().equals(hunter) && displayName.equalsIgnoreCase(COMPASS_NAME))
+//                event.setCancelled(true);
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onDrop(PlayerDropItemEvent event) {
+//        if (game.gameOngoing() && !game.gracePeriodOngoing() && event.getPlayer().equals(hunter) && autoCollect) {
+//            if (event.getItemDrop().getItemStack().getType() == Material.COMPASS) {
+//                ItemStack stack = event.getItemDrop().getItemStack();
+//                if (stack.getItemMeta() != null && stack.getItemMeta().getDisplayName().equals(COMPASS_NAME)) {
+//                    event.setCancelled(true);
+//                }
+//            }
+//        }
+//    }
+//
+//    @EventHandler
+//    public void onMove(PlayerMoveEvent event) {
+//        if (game.gameOngoing() && !game.gracePeriodOngoing() && (event.getPlayer().equals(hunter)) || event.getPlayer().equals(tracked)) {
+//            updateTracker();
+//        }
+//    }
 
     @Override
     public Player getHunter() {

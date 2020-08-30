@@ -168,9 +168,9 @@ public class ManhuntGameImpl implements ManhuntGame {
                     this.cancel();
                     return;
                 }
+                ManhuntGameImpl.this.left -= delay;
                 inclPlayers.forEach(player -> player.sendMessage(ChatColor.LIGHT_PURPLE + String.valueOf(left) +
                         ChatColor.GREEN + " seconds left"));
-                ManhuntGameImpl.this.left -= delay;
                 if (left <= 0) {
                     // grace period ended
                     inclPlayers.forEach(player -> player.sendMessage(ChatColor.RED + "Grace period ended!"));
@@ -193,7 +193,7 @@ public class ManhuntGameImpl implements ManhuntGame {
                     this.cancel();
                 }
             }
-        }.runTaskTimer(ManhuntPlugin.getInstance(), 0, delay * 20);
+        }.runTaskTimer(ManhuntPlugin.getInstance(), delay * 20, delay * 20);
     }
 
     private void countSpeedrunnerLife() {
@@ -213,7 +213,7 @@ public class ManhuntGameImpl implements ManhuntGame {
 
     private void createTrackerEntries() {
         hunters.forEach(hun -> {
-            HunterTracker tracker = new SimpleTracker(hun, this);
+            HunterTracker tracker = new AdvancedTracker(hun, this);
             trackers.add(tracker);
             tracker.giveCompass();
         });

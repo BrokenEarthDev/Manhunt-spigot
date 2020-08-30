@@ -37,9 +37,8 @@ public class ManhuntStopCommand extends ManhuntCommand {
                 String msg2 = "If there are bugs, feel free to manually reload the " +
                         "server";
                 sender.sendMessage(ChatColor.GREEN + msg1);
-                sender.sendMessage(ChatColor.GREEN + msg2);
                 ManhuntPlugin.getInstance().getLogger().fine(msg1);
-                ManhuntPlugin.getInstance().getLogger().fine(msg2);
+                ManhuntPlugin.getInstance().getLogger().info(msg2);
             }
         }
     }

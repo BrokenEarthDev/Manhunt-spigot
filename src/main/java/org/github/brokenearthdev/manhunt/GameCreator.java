@@ -9,7 +9,6 @@ import org.github.brokenearthdev.manhunt.impl.ManhuntGameImpl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -45,18 +44,12 @@ public class GameCreator {
         this(ManhuntPlugin.getInstance().getDefaultOptions());
     }
 
-    private boolean checkInclude(Player player) {
-        if (includedPlayers != null && includedPlayers.contains(player)) return true;
-        if (Objects.equals(speedrunner, player)) return true;
-        return hunters != null && hunters.contains(player);
-    }
-
     /**
      * @param player Player to include
      * @return This object
      */
     public GameCreator includePlayer(Player player) {
-        if (!checkInclude(player))
+        if (player != null && !includedPlayers.contains(player))
             includedPlayers.add(player);
         return this;
     }
