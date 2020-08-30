@@ -56,7 +56,7 @@ public class ManhuntPlugin extends JavaPlugin implements Listener {
             gameConfig = YamlConfiguration.loadConfiguration(gameConfigFile);
             optionsConfig = YamlConfiguration.loadConfiguration(optionsConfigFile);
             if (newOptions) dumpOptionConfigDefaults();
-            largestGameID = SpeedrunnerUtils.findLargestID();
+            largestGameID = ManhuntUtils.findLargestID();
             defaultOptions = new DefaultOptions();
         } catch (IOException e) {
             getLogger().warning("An IO error had occurred: " + e.getMessage());
@@ -100,7 +100,7 @@ public class ManhuntPlugin extends JavaPlugin implements Listener {
             if (unloaded) getLogger().fine("Unloaded world");
             else getLogger().warning("Can't unload world");
             getLogger().info("Attempting to delete world ---");
-            boolean deleted = SpeedrunnerUtils.deleteFiles(e.getWorldFolder());
+            boolean deleted = ManhuntUtils.deleteFiles(e.getWorldFolder());
             if (deleted) getLogger().fine("Deleted world");
             else getLogger().warning("Can't delete world. Make sure to delete it manually.");
         });

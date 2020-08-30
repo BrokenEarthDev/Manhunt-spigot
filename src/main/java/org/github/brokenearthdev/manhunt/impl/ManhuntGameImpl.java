@@ -228,6 +228,9 @@ public class ManhuntGameImpl implements ManhuntGame {
             List<String> uuidString = new ArrayList<>();
             hunters.forEach(hun -> uuidString.add(hun.getUniqueId().toString()));
             config.set("games.game#" + game + ".players.hunters", uuidString);
+            config.set("games.game#" + game + ".worlds.main", main.getSeed());
+            config.set("games.game#" + game + ".worlds.nether", nether.getSeed());
+            config.set("games.game#" + game + ".worlds.end", end.getSeed());
             config.set("games.game#" + game + ".players.speedrunners", speedrunner.getUniqueId().toString());
             config.set("games.game#" + game + ".winners", results.hunterWin() ? "hunters" : "speedrunners");
             config.set("games.game#" + game + ".options.allowTrackers", options.allowTrackers());
@@ -235,7 +238,7 @@ public class ManhuntGameImpl implements ManhuntGame {
             config.set("games.game#" + game + ".options.generateNewNetherWorld", options.isGenerateNetherWorld());
             config.set("games.game#" + game + ".options.generateNewEndWorld", options.isGenerateEndWorld());
             config.set("games.game#" + game + ".options.gracePeriodEnabled", options.gracePeriodEnabled());
-            config.set("games.game#" + game + ".options.gracePeriodSeconds",options.gracePeriodSeconds());
+            config.set("games.game#" + game + ".options.gracePeriodSeconds", options.gracePeriodSeconds());
             config.set("games.game#" + game + ".options.maxPlayersCount", options.getMaxPlayersCount());
             config.get("games.game#" + game + "options.minPlayersCount", options.getMinimumPlayersCount());
         }

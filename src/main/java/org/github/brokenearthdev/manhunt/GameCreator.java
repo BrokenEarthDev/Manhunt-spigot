@@ -208,8 +208,8 @@ public class GameCreator {
      */
     public ManhuntGame createGame() {
         includedPlayers = (includedPlayers == null) ? new ArrayList<>() : includedPlayers;
-        generateWorldsIfEnabled();
         setWorldIfNull();
+        generateWorldsIfEnabled();
         modifyIncludedPlayersList(minPlayersCount, maxPlayersCount);
 
         GameOptions options = new GameOptionsImpl(

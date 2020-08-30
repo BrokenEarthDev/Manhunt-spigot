@@ -7,8 +7,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.github.brokenearthdev.manhunt.ManhuntPlugin;
+import org.github.brokenearthdev.manhunt.ManhuntUtils;
 import org.github.brokenearthdev.manhunt.PlayerProfile;
-import org.github.brokenearthdev.manhunt.SpeedrunnerUtils;
 import org.github.brokenearthdev.manhunt.gui.ItemFactory;
 import org.github.brokenearthdev.manhunt.gui.buttons.Button;
 import org.github.brokenearthdev.manhunt.gui.menu.GameMenu;
@@ -41,7 +41,7 @@ public class ManhuntProfileCommand extends ManhuntCommand {
         String kdrString = String.format(ChatColor.GREEN + "Kill/Death ratio: " + ChatColor.RED + "%.2f", ((float) profile.getKills() / (float) profile.getDeaths()));
         GameMenu menu = new GameMenu(ChatColor.GOLD + ChatColor.BOLD.toString() + player.getName() + "'s profile", 6);
         menu.setButton(new Button(4, ItemFactory.create(
-                SpeedrunnerUtils.createPlayerHead(target, ChatColor.GREEN + player.getName()))
+                ManhuntUtils.createPlayerHead(target, ChatColor.GREEN + player.getName()))
                 .setLore(ChatColor.YELLOW + "Speedrunner Profile").create()));
         menu.setButton(new Button(19, ItemFactory.create(Material.DIAMOND_SWORD).setName(ChatColor.GREEN + "Kills: " + ChatColor.RED + profile.getKills()).create()));
         menu.setButton(new Button(20, ItemFactory.create(Material.REDSTONE).setName(ChatColor.GREEN + "Deaths: " + ChatColor.RED + profile.getDeaths()).create()));

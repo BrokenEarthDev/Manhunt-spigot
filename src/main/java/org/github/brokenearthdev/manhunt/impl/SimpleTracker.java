@@ -12,7 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.github.brokenearthdev.manhunt.HunterTracker;
 import org.github.brokenearthdev.manhunt.ManhuntGame;
 import org.github.brokenearthdev.manhunt.ManhuntPlugin;
-import org.github.brokenearthdev.manhunt.SpeedrunnerUtils;
+import org.github.brokenearthdev.manhunt.ManhuntUtils;
 import org.github.brokenearthdev.manhunt.gui.ItemFactory;
 import org.github.brokenearthdev.manhunt.gui.buttons.BooleanButton;
 import org.github.brokenearthdev.manhunt.gui.buttons.Button;
@@ -119,7 +119,7 @@ public class SimpleTracker implements HunterTracker, Listener {
         for (int i = 0; i < gameHunters.size(); i++) {
             if (!gameHunters.get(i).equals(hunter)) {
                 int finalI = i;
-                menu.setButton(new Button(i, SpeedrunnerUtils.createPlayerHead(gameHunters.get(i),
+                menu.setButton(new Button(i, ManhuntUtils.createPlayerHead(gameHunters.get(i),
                         ChatColor.AQUA + gameHunters.get(i).getName())).addAction(e -> {
                     setTracked(gameHunters.get(finalI));
                     hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
@@ -146,7 +146,7 @@ public class SimpleTracker implements HunterTracker, Listener {
         GameMenu menu = new GameMenu("Your Trackers", slots / 9);
         for (int i = 0; i < trackers.size(); i++) {
             if (!trackers.get(i).getHunter().equals(hunter) && Objects.equals(hunter, trackers.get(i).getTrackedPlayer())) {
-                menu.setButton(new Button(i, SpeedrunnerUtils.createPlayerHead(trackers.get(i).getHunter(), ChatColor.AQUA + trackers.get(i).getHunter().getName())));
+                menu.setButton(new Button(i, ManhuntUtils.createPlayerHead(trackers.get(i).getHunter(), ChatColor.AQUA + trackers.get(i).getHunter().getName())));
             }
         }
         menu.setButton(new Button(slots - 1, ItemFactory.create(Material.ARROW).setName(ChatColor.GREEN + "Previous Page").create())
@@ -161,21 +161,21 @@ public class SimpleTracker implements HunterTracker, Listener {
         GameMenu menu = new GameMenu("Tracker Settings", 6);
         menu.setButton(new Button(4, ItemFactory.create(Material.COMPASS).setName(ChatColor.YELLOW +
                 "Tracking Settings").create()));
-        menu.setButton(new Button(19, ItemFactory.create(SpeedrunnerUtils.createPlayerHead(game.getHunters().get(0),
+        menu.setButton(new Button(19, ItemFactory.create(ManhuntUtils.createPlayerHead(game.getHunters().get(0),
                 ChatColor.GREEN + "Track Hunter(s)")).addLoreLine(ChatColor.GREEN + "Potential Hunter(s) Include(s): "
-                + ChatColor.RED + SpeedrunnerUtils.potentialHunterNames(game, hunter)).create()).addAction((e) -> {
+                + ChatColor.RED + ManhuntUtils.potentialHunterNames(game, hunter)).create()).addAction((e) -> {
             this.openHuntersInterface();
         }));
         String text2 = game.getSpeedrunner().equals(tracked) ? ChatColor.RED + "You're Already Tracking a Speedrunner"
                 : ChatColor.GREEN + "Track Speedrunner";
-        menu.setButton(new Button(20, SpeedrunnerUtils.createPlayerHead(tracked, text2)).addAction(e -> {
+        menu.setButton(new Button(20, ManhuntUtils.createPlayerHead(tracked, text2)).addAction(e -> {
             if (game.getSpeedrunner().equals(tracked)) {
                 hunter.sendMessage(ChatColor.RED + "The speedrunner is already being tracked!");
                 hunter.playSound(hunter.getLocation(), Sound.ENTITY_SKELETON_DEATH, 100, 100);
             } else {
                 setTracked(game.getSpeedrunner());
                 hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
-                e.setCurrentItem(SpeedrunnerUtils.createPlayerHead(tracked, ChatColor.RED + "You're Already Tracking a Speedrunner"));
+                e.setCurrentItem(ManhuntUtils.createPlayerHead(tracked, ChatColor.RED + "You're Already Tracking a Speedrunner"));
             }
         }));
         String text3 = tracked == null ? ChatColor.RED + "You're Already Tracking Spawn" : ChatColor.GREEN + "Track Spawn";
@@ -233,7 +233,7 @@ public class SimpleTracker implements HunterTracker, Listener {
                 .setName(ChatColor.GREEN + "Location Tracked: COORDINATES").create()));
         menu.setButton(new Button(33, ItemFactory.create(Material.BOW).setName(ChatColor.GREEN + "Your Trackers").create())
                 .addAction(event -> openTrackersInterface()));
-        ItemStack redGlass = SpeedrunnerUtils.redGlass();
+        ItemStack redGlass = ManhuntUtils.redGlass();
         menu.setButton(new Button(29, redGlass));
         menu.setButton(new Button(30, redGlass));
         menu.setButton(new Button(32, redGlass));

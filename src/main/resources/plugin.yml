@@ -1,4 +1,4 @@
-name: Speedrunner
+name: Manhunt
 version: ${project.version}
 main: org.github.brokenearthdev.manhunt.ManhuntPlugin
 api-version: 1.16

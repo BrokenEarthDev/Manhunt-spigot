@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.github.brokenearthdev.manhunt.SpeedrunnerUtils;
+import org.github.brokenearthdev.manhunt.ManhuntUtils;
 import org.github.brokenearthdev.manhunt.gui.ItemFactory;
 import org.github.brokenearthdev.manhunt.gui.buttons.BooleanButton;
 import org.github.brokenearthdev.manhunt.gui.buttons.Button;
@@ -77,8 +77,8 @@ public class PlayerSelectorMenu extends PaginatedMenu {
                     if (unselectedMessage != null) entity.sendMessage(unselectedMessage);
                     selected.remove(player);
                 }
-            }, SpeedrunnerUtils.createPlayerHead(player, ChatColor.GREEN + player.getName() + ": SELECTED"),
-                    SpeedrunnerUtils.createPlayerHead(player, ChatColor.GREEN + player.getName() + ": " + ChatColor.RED + "NOT SELECTED"));
+            }, ManhuntUtils.createPlayerHead(player, ChatColor.GREEN + player.getName() + ": SELECTED"),
+                    ManhuntUtils.createPlayerHead(player, ChatColor.GREEN + player.getName() + ": " + ChatColor.RED + "NOT SELECTED"));
             this.setButton(button);
         }
         closeActions.add(e -> {

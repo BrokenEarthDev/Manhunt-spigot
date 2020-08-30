@@ -46,10 +46,10 @@ public class GameEventHandler implements Listener {
         if (event.getEntity() instanceof Player) {
             Player killer = event.getEntity().getKiller();
             ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
-            if (killer != null && game.getIncludedPlayers().contains(killer) && game.gameOngoing()) {
+            if (game != null && killer != null && game.getIncludedPlayers().contains(killer) && game.gameOngoing()) {
                 // in game
                 PlayerProfile profile = ManhuntPlugin.getInstance().getProfile(killer);
-                profile.setKills(profile.getKills() + 1);
+                if (event.getEntity() instanceof Player) profile.setKills(profile.getKills() + 1);
             }
         }
     }
@@ -59,8 +59,10 @@ public class GameEventHandler implements Listener {
         if (event.getEntity() instanceof Player) {
             // player damaged
             ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
-            if (ManhuntPlugin.getInstance().isInGame((Player) event.getEntity()) && game.gracePeriodOngoing()) {
-                event.setCancelled(true);
+            if (game != null) {
+                if (ManhuntPlugin.getInstance().isInGame((Player) event.getEntity()) && game.gracePeriodOngoing()) {
+                    event.setCancelled(true);
+                }
             }
         }
     }
@@ -69,27 +71,42 @@ public class GameEventHandler implements Listener {
     public void onPortalEnter(PlayerPortalEvent event) {
         if (ManhuntPlugin.getInstance().getRunningGame() != null) {
             ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
-            if (game.gameOngoing() && game.getIncludedPlayers().contains(event.getPlayer())) {
-                Location to = event.getTo();
-                if (to != null && to.getWorld() != null) {
-                    World world = to.getWorld();
-                    World instead = null;
-                    switch (world.getEnvironment()) {
-                        case NETHER:
-                            instead = game.getNetherWorld();
-                        case THE_END:
-                            instead = game.getEnd();
-                        case NORMAL:
-                            instead = game.getMainWorld();
+            if (game != null) {
+                if (game.gameOngoing() && game.getIncludedPlayers().contains(event.getPlayer())) {
+                    Location to = event.getTo();
+                    if (to != null && to.getWorld() != null) {
+                        World world = to.getWorld();
+                        World instead = null;
+                        switch (world.getEnvironment()) {
+                            case NETHER:
+                                instead = game.getNetherWorld();
+                                break;
+                            case THE_END:
+                                instead = game.getEnd();
+                                break;
+                            case NORMAL:
+                                instead = game.getMainWorld();
+                                break;
+                        }
+                        if (instead == null) {
+                            ManhuntPlugin.getInstance().getLogger().warning("Unable to warp player. The target world is " +
+                                    "null!");
+                            return;
+                        }
+                        Location newLocation = new Location(instead, to.getX(), to.getY(), to.getZ());
+                        event.setTo(newLocation);
                     }
-                    if (instead == null) {
-                        ManhuntPlugin.getInstance().getLogger().warning("Unable to warp player. The target world is " +
-                                "null!");
-                        return;
-                    }
-                    Location newLocation = new Location(instead, to.getX(), to.getY(), to.getZ());
-                    event.setTo(newLocation);
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onDragonKill(EntityDeathEvent event) {
+        if (event.getEntityType() == EntityType.ENDER_DRAGON) {
+            ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
+            if (game != null && game.gameOngoing()) {
+                game.announceWin(false);
             }
         }
     }

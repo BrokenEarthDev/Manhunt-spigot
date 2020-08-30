@@ -14,7 +14,7 @@ import org.github.brokenearthdev.manhunt.gui.ItemFactory;
 import java.io.File;
 import java.util.*;
 
-public class SpeedrunnerUtils {
+public class ManhuntUtils {
 
     public static String potentialHunterNames(ManhuntGame game, Player compassOwner) {
         List<Player> hun = game.getHunters();

@@ -96,8 +96,10 @@ public class StartMenu extends GameMenu {
         else creator.setEnd(end);
         if (nether == null) creator.generateNether(true);
         else creator.setNetherWorld(nether);
-        creator.dumpToConfig(dumpInfo).allowTrackers(allowTrackers);
-        ManhuntGame game = creator.createGame();
+        ManhuntGame game = creator.setGracePeriod(gracePeriod)
+                .dumpToConfig(dumpInfo)
+                .allowTrackers(allowTrackers)
+                .createGame();
         game.startGame();
     }
 
@@ -264,7 +266,7 @@ public class StartMenu extends GameMenu {
         private void addWorldSelectorFunction() {
             // normal world selector
             worldButton.addAction(action -> {
-                WorldSelectorMenu menu = new WorldSelectorMenu("World Selector", StartMenu.this, Material.GRASS_BLOCK, SpeedrunnerUtils.getNormalWorlds(),
+                WorldSelectorMenu menu = new WorldSelectorMenu("World Selector", StartMenu.this, Material.GRASS_BLOCK, ManhuntUtils.getNormalWorlds(),
                         world, Bukkit.getWorld("world"));
                 menu.setSelectedMessage(ChatColor.GREEN + "Successfully selected world!");
                 menu.setUnselectedMsg(ChatColor.GREEN + "Successfully unselected world!");
@@ -286,7 +288,7 @@ public class StartMenu extends GameMenu {
             // nether world selector
             netherWorldButton.addAction(action -> {
                 WorldSelectorMenu menu = new WorldSelectorMenu("Nether Selector", StartMenu.this, Material.NETHER_BRICK,
-                        SpeedrunnerUtils.getNetherWorlds(), nether, Bukkit.getWorld("world_nether"));
+                        ManhuntUtils.getNetherWorlds(), nether, Bukkit.getWorld("world_nether"));
                 menu.setSelectedMessage(ChatColor.GREEN + "Successfully selected world!");
                 menu.setUnselectedMsg(ChatColor.GREEN + "Successfully unselected world!");
                 menu.addOnClickToMain(event -> {
@@ -305,7 +307,7 @@ public class StartMenu extends GameMenu {
             // end world selector
             endWorldButton.addAction(action -> {
                 WorldSelectorMenu menu = new WorldSelectorMenu("End Selector", StartMenu.this, Material.END_STONE,
-                        SpeedrunnerUtils.getNetherWorlds(), end, Bukkit.getWorld("world_the_end"));
+                        ManhuntUtils.getNetherWorlds(), end, Bukkit.getWorld("world_the_end"));
                 menu.setSelectedMessage(ChatColor.GREEN + "Successfully selected world!");
                 menu.setUnselectedMsg(ChatColor.GREEN + "Successfully unselected world!");
                 menu.addOnClickToMain(event -> {
@@ -384,7 +386,7 @@ public class StartMenu extends GameMenu {
                         speedrunner = selected.get(0);
                         e.getWhoClicked().sendMessage(ChatColor.GREEN + "Success! " + selected.get(0).getName() + " will" +
                                 " be the speedrunner!");
-                        runnerSelectorButton.setItem(SpeedrunnerUtils.createPlayerHead(speedrunner, "Select Speedrunner"));
+                        runnerSelectorButton.setItem(ManhuntUtils.createPlayerHead(speedrunner, "Select Speedrunner"));
                         display(e.getWhoClicked());
                     }
                 });
