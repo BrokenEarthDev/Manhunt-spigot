@@ -55,6 +55,17 @@ public class ManhuntGameImpl implements ManhuntGame {
     }
 
     @Override
+    public HunterTracker getTrackerFor(Player player) {
+        HunterTracker tracker = null;
+        for (HunterTracker tracker1 : trackers)
+            if (tracker1.getHunter().equals(player)) {
+                tracker = tracker1;
+                break;
+            }
+        return tracker;
+    }
+
+    @Override
     public List<Player> getHunters() {
         return hunters;
     }

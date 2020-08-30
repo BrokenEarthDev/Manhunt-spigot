@@ -13,6 +13,9 @@ commands:
   mhprofile:
     usage: /<comand>
     description: access the profile
+  mhtracker:
+    usage: /<command>
+    description: gives a tracker to the hunter if, for some reason, the hunter doesn't have a compass
 
 permissions:
   manhunt.game.options:

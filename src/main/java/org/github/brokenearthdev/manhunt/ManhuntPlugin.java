@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.github.brokenearthdev.manhunt.commands.ManhuntProfileCommand;
 import org.github.brokenearthdev.manhunt.commands.ManhuntStartCommand;
 import org.github.brokenearthdev.manhunt.commands.ManhuntStopCommand;
+import org.github.brokenearthdev.manhunt.commands.ManhuntTrackerCommand;
 import org.github.brokenearthdev.manhunt.gui.menu.GameMenu;
 import org.github.brokenearthdev.manhunt.impl.DefaultOptions;
 
@@ -71,6 +72,7 @@ public class ManhuntPlugin extends JavaPlugin implements Listener {
         getServer().getPluginCommand("mhprofile").setExecutor(new ManhuntProfileCommand());
         getServer().getPluginCommand("mhstart").setExecutor(new ManhuntStartCommand());
         getServer().getPluginCommand("mhstop").setExecutor(new ManhuntStopCommand());
+        getServer().getPluginCommand("mhtracker").setExecutor(new ManhuntTrackerCommand());
     }
 
     @Override

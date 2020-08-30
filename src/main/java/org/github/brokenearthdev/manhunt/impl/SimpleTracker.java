@@ -6,6 +6,7 @@ import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -26,9 +27,7 @@ public class SimpleTracker implements HunterTracker, Listener {
     private final Player hunter;
     private final ManhuntGame game;
 
-    private static final String COMPASS_NAME = ChatColor.GREEN + ChatColor.BOLD.toString() + "Player Tracker " +
-            ChatColor.GOLD + ChatColor.BOLD.toString() + " | " + ChatColor.GREEN
-            + ChatColor.BOLD.toString() + "Left or right click";
+
 
     private static final ItemStack COMPASS = ItemFactory.create(Material.COMPASS)
             .setName(COMPASS_NAME).setUnbreakable(true).create();
@@ -49,6 +48,7 @@ public class SimpleTracker implements HunterTracker, Listener {
 
     @EventHandler
     public void onPortal(PlayerPortalEvent event) {
+        if (game == null) return;
         if (game.gameOngoing() && !game.gracePeriodOngoing()) {
             if (event.getPlayer().equals(game.getSpeedrunner())) lastPortalLocation = event.getFrom();
             if (event.getPlayer().equals(hunter)) hunterPortalLocation = event.getTo();
@@ -72,6 +72,16 @@ public class SimpleTracker implements HunterTracker, Listener {
         if (event.getPlayer().equals(hunter) && game != null && game.gameOngoing() && !game.gracePeriodOngoing()) {
             event.getPlayer().getInventory().addItem(COMPASS);
             updateTracker();
+        }
+    }
+
+    @EventHandler
+    public void onCollect(EntityPickupItemEvent event) {
+        if (game == null) return;
+        if (game.gameOngoing() && !game.gracePeriodOngoing() && event.getItem().getItemStack().hasItemMeta()) {
+            String displayName = event.getItem().getItemStack().getItemMeta().getDisplayName();
+            if (!event.getEntity().equals(hunter) && displayName.equalsIgnoreCase(COMPASS_NAME))
+                event.setCancelled(true);
         }
     }
 

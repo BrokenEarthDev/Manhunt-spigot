@@ -11,9 +11,25 @@ import java.util.List;
  */
 public interface ManhuntGame {
 
+    /**
+     * @return The hunter tracker objects (empty if allow trackers is disabled)
+     */
+    List<HunterTracker> getHunterTrackers();
+
+    /**
+     * Gets the tracker for a hunter
+     *
+     * @param player The hunter
+     * @return {@code null} if trackers are disabled or if the player isn't a hunter
+     * {@link HunterTracker} object otherwise
+     */
+    HunterTracker getTrackerFor(Player player);
+
+    /**
+     * @return The included players
+     */
     List<Player> getIncludedPlayers();
 
-    List<HunterTracker> getHunterTrackers();
 
     /**
      * @return The hunter(s)

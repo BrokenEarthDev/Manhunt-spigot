@@ -109,4 +109,8 @@ public interface HunterTracker {
         }
     }
 
+    String COMPASS_NAME = ChatColor.GREEN + ChatColor.BOLD.toString() + "Player Tracker " +
+            ChatColor.GOLD + ChatColor.BOLD.toString() + " | " + ChatColor.GREEN
+            + ChatColor.BOLD.toString() + "Left or right click";
+
 }
