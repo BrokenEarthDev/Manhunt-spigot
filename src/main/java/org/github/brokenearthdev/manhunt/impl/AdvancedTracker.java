@@ -12,9 +12,7 @@ import org.github.brokenearthdev.manhunt.HunterTracker;
 import org.github.brokenearthdev.manhunt.ManhuntGame;
 import org.github.brokenearthdev.manhunt.ManhuntUtils;
 import org.github.brokenearthdev.manhunt.gui.ItemFactory;
-import org.github.brokenearthdev.manhunt.gui.buttons.Button;
 import org.github.brokenearthdev.manhunt.gui.game.CompassTrackingMenu;
-import org.github.brokenearthdev.manhunt.gui.menu.GameMenu;
 import org.github.brokenearthdev.manhunt.gui.menu.ListPaginatedMenu;
 
 import java.util.ArrayList;
@@ -88,12 +86,7 @@ public class AdvancedTracker implements HunterTracker {
         });
         ListPaginatedMenu<Player> menu = new ListPaginatedMenu<>("Your Trackers",
                 trackers, (player) -> ManhuntUtils.createPlayerHead(player, ChatColor.AQUA + player.getName()));
-        List<GameMenu> gameMenus = menu.getPages();
-        if (gameMenus.size() != 0) {
-            GameMenu gameMenu = gameMenus.get(0);
-            gameMenu.setButton(new Button(menu.getSize() - 9, ItemFactory.create(Material.ARROW).setName(ChatColor.GREEN + "Go Back").create())
-                    .addAction(e -> openTrackingInterface()));
-        }
+        menu.setReturntoGui(this.menu);
         menu.display(hunter);
     }
 

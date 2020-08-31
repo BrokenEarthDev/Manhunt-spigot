@@ -129,12 +129,12 @@ public class GameEventHandler implements Listener {
                 }
                 minsLeft[0]--;
                 if (minsLeft[0] <= 0) {
+                    this.cancel();
                     List<Player> incl = game.getIncludedPlayers();
                     incl.forEach(p -> {
                         if (incl.size() >= 2) {
                             p.sendMessage(ChatColor.LIGHT_PURPLE + player.getName() +
                                     ChatColor.GREEN + " has been excluded from the game");
-                            this.cancel();
                         } else if (incl.size() == 1) {
                             Player index0 = incl.get(0);
                             boolean hunter = game.getHunters().contains(index0);
@@ -150,6 +150,7 @@ public class GameEventHandler implements Listener {
                                 ManhuntPlugin.getInstance().getLogger().info("Successfully killed game");
                             }
                         }
+                        if (p.equals(game.getSpeedrunner())) game.announceWin(true);
                     });
                     HashMap<UUID, Boolean> map = OFFLINE_PLAYERS.get(game);
                     if (map != null) {

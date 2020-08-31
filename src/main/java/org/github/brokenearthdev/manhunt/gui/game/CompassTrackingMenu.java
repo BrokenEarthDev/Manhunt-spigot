@@ -139,12 +139,14 @@ public class CompassTrackingMenu extends GameMenu {
         String text3 = tracked == null ? ChatColor.RED + "You're Already Tracking Spawn" : ChatColor.GREEN + "Track Spawn";
         ItemStack trackSpawn = ItemFactory.create(Material.GHAST_SPAWN_EGG).setName(text3).create();
         ItemStack trackersInterface = ItemFactory.create(Material.BOW).setName(ChatColor.GREEN + "Your Trackers").create();
+        ItemStack disabled = ItemFactory.create(Material.RED_STAINED_GLASS_PANE).setName(ChatColor.RED + "This feature is disabled")
+                .setLore(ChatColor.YELLOW + "In under certain circumstances,", ChatColor.YELLOW + "this feature may be enabled").create();
         // adds the items
         trackingSettingsButton.setItem(trackingSettings);
-        trackHuntersButton.setItem(trackHunters);
+        trackHuntersButton.setItem(game.getHunters().size() == 1 ? disabled : trackHunters);
         trackSpeedrunnersButton.setItem(trackSpeedrunners);
         trackSpawnButton.setItem(trackSpawn);
-        trackersInterfaceButton.setItem(trackersInterface);
+        trackersInterfaceButton.setItem(game.getHunters().size() == 1 ? disabled : trackersInterface);
     }
 
     /**
@@ -155,7 +157,9 @@ public class CompassTrackingMenu extends GameMenu {
     private class ButtonFunctions {
 
         private void addTrackHuntersFunction() {
-            trackHuntersButton.addAction(action -> CompassTrackingMenu.this.tracker.openHuntersInterface());
+            trackHuntersButton.addAction(action -> {
+                CompassTrackingMenu.this.tracker.openHuntersInterface();
+            });
         }
 
         private void addTrackSpeedrunnersFunction() {
