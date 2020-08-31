@@ -118,10 +118,4 @@ public class ManhuntUtils {
         });
         return endWorlds;
     }
-
-    public static int closest(int num, int a, int b) {
-        if (Math.abs(num - a) < Math.abs(num - b)) return a;
-        else return b;
-    }
-
 }

@@ -1,10 +1,12 @@
 package org.github.brokenearthdev.manhunt;
 
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -21,6 +23,21 @@ public class TrackerEventHandler implements Listener {
      */
     private static boolean gameCheck(ManhuntGame game) {
         return game != null && game.gameOngoing() && !game.gracePeriodOngoing() && game.getOptions().allowTrackers();
+    }
+
+    /**
+     * @param game   The game
+     * @param player The player
+     * @return Whether the game is running and the player has a tracker or not
+     */
+    private static boolean hasTracker(ManhuntGame game, Player player) {
+        if (gameCheck(game)) {
+            ItemStack[] items = player.getInventory().getContents();
+            for (ItemStack stack : items) {
+                if (isTracker(stack)) return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -71,20 +88,40 @@ public class TrackerEventHandler implements Listener {
     }
 
     @EventHandler
+    public void onInventoryClick(InventoryClickEvent event) {
+        ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
+        if (gameCheck(game)) {
+            ItemStack stack = event.getCurrentItem();
+            if (isTracker(stack)) {
+                HumanEntity entity = event.getWhoClicked();
+                if (!(entity instanceof Player)) {
+                    event.setCancelled(true);
+                    return;
+                }
+                Player player = (Player) event.getWhoClicked();
+                boolean hunter = game.getHunters().contains(player);
+                if (hunter && hasTracker(game, player)) {
+                    event.setCancelled(true);
+                } else if (!hunter) event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
     public void onPortal(PlayerPortalEvent event) {
         ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
         if (gameCheck(game)) {
             game.getHunterTrackers().forEach(tracker -> {
                 Player tracked = tracker.getTrackedPlayer();
                 if (tracked != null && tracked.equals(event.getPlayer())) {
-                    // updated the trackers
+                    // update the trackers
                     AdvancedTracker advancedTracker = (AdvancedTracker) tracker;
                     advancedTracker.setTrackedPortalLocation(event.getFrom());
                 }
             });
             if (game.getHunters().contains(event.getPlayer())) {
                 AdvancedTracker tracker = (AdvancedTracker) game.getTrackerFor(event.getPlayer());
-                tracker.setPersonalPortalLocation(event.getTo());
+                if (tracker != null) tracker.setPersonalPortalLocation(event.getTo());
             }
         }
     }

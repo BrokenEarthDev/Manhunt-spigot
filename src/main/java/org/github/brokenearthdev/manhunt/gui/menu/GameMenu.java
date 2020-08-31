@@ -95,11 +95,11 @@ public class GameMenu {
     /**
      * Sets the button
      *
-     * @param button Button to add. Set to null to remove.
+     * @param button Button to add. Set item to null to remove.
      * @return The added button
      */
     public GameMenu setButton(Button button) {
-        if (button == null) {
+        if (button.getItem() == null) {
             buttons.remove(button.getSlot());
             return this;
         }

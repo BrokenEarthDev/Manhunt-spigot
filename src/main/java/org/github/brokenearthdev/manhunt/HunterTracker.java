@@ -50,6 +50,11 @@ public interface HunterTracker {
     void setTracked(Player player);
 
     /**
+     * @return Whether the hunter's actionbar contains info about the tracked location/player or not
+     */
+    boolean isIncludeInfoAtActionbar();
+
+    /**
      * Track spawn
      */
     void setTrackSpawn();
@@ -68,6 +73,11 @@ public interface HunterTracker {
      * @return Whether auto collect is enabled or not
      */
     boolean isAutoCollect();
+
+    /**
+     * @param include Whether to allow info at hunter's actionbar or not
+     */
+    void setIncludeInfoAtActionbar(boolean include);
 
     /**
      * @return The tracked player

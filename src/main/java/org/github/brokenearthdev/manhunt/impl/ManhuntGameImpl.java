@@ -46,7 +46,7 @@ public class ManhuntGameImpl implements ManhuntGame {
 
     @Override
     public List<Player> getIncludedPlayers() {
-        return new ArrayList<>(inclPlayers);
+        return inclPlayers;
     }
 
     @Override
@@ -122,8 +122,11 @@ public class ManhuntGameImpl implements ManhuntGame {
 
         inclPlayers.forEach(player -> player.playSound(player.getLocation(), Sound.ENTITY_ENDER_DRAGON_AMBIENT, 100, 100));
         inclPlayers.forEach(player -> player.sendMessage(ChatColor.GREEN + "Game Started!"));
-
+        boolean create = gracePeriod <= 0 && options.allowTrackers();
         this.startGracePeriod();
+        if (create) {
+            createTrackerEntries();
+        }
     }
 
     private void updateData() {
@@ -163,7 +166,7 @@ public class ManhuntGameImpl implements ManhuntGame {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (!allowGracePeriod || !gameOngoing) {
+                if (!allowGracePeriod || !gameOngoing || left <= 0) {
                     // just in case
                     this.cancel();
                     return;
@@ -262,13 +265,22 @@ public class ManhuntGameImpl implements ManhuntGame {
             HunterTracker.removeCompasses();
 
         // add to avg times lived
-        PlayerProfile playerProfile = ManhuntPlugin.getInstance().getProfile(speedrunner);
-        double previousAvg = playerProfile.getAverageTimeSurvived();
-        int previousSpeedrunner = playerProfile.getTimesSpeedrunner() - 1;
-        int timesSpeedrunner = playerProfile.getTimesSpeedrunner();
-        double newAvg = ((double) previousSpeedrunner * previousAvg + (double) speedrunnerLivedSeconds)
-                / ((double) timesSpeedrunner);
-        playerProfile.setAvgTimeSurvived(newAvg);
+        if (speedrunner != null) {
+            PlayerProfile playerProfile = ManhuntPlugin.getInstance().getProfile(speedrunner);
+            double previousAvg = playerProfile.getAverageTimeSurvived();
+            int previousSpeedrunner = playerProfile.getTimesSpeedrunner() - 1;
+            int timesSpeedrunner = playerProfile.getTimesSpeedrunner();
+            double newAvg = ((double) previousSpeedrunner * previousAvg + (double) speedrunnerLivedSeconds)
+                    / ((double) timesSpeedrunner);
+            playerProfile.setAvgTimeSurvived(newAvg);
+        }
+
+        hunters.forEach(hunter -> {
+            if (hunter != null) {
+                PlayerProfile profile = ManhuntPlugin.getInstance().getProfile(hunter);
+                profile.setTimesHunter(profile.getTimesHunter() + 1);
+            }
+        });
 
         gameOngoing = false;
         inclPlayers.forEach(player -> player.teleport(Bukkit.getWorld("world").getSpawnLocation()));

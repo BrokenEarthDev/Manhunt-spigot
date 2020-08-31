@@ -168,12 +168,12 @@ public class StartMenu extends GameMenu {
         String netherWorldText = ChatColor.GREEN + "Nether: " + (generateNetherWorld ? "GENERATE NEW" : nether.getName().toUpperCase());
         String endWorldText = ChatColor.GREEN + "End: " + (generateEndWorld ? "GENERATE NEW" : end.getName().toUpperCase());
         gameSettingsButton = new Button(4, createItem(Material.EMERALD, ChatColor.AQUA + "Game Settings"));
-        runnerSelectorButton = new Button(24, createItem(Material.ARROW, "Select Speedrunner"));
-        randomSelectorButton = new Button(25, createItem(Material.GHAST_SPAWN_EGG, "Select Random"));
+        runnerSelectorButton = new Button(24, createItem(Material.ARROW, ChatColor.RED + "Select Speedrunner"));
+        randomSelectorButton = new Button(25, createItem(Material.GHAST_SPAWN_EGG, ChatColor.WHITE + "Select Random"));
         hunterSelectorButton = new Button(23, createItem(Material.DIAMOND_SWORD, ChatColor.AQUA + "Select Hunter"));
-        includedSelectorButton = new Button(15, createItem(Material.REPEATER, "Include/Exclude Players"));
+        includedSelectorButton = new Button(15, createItem(Material.REPEATER, ChatColor.GREEN + "Include/Exclude Players"));
         worldButton = new Button(32, createItem(Material.GRASS_BLOCK, normalWorldText));
-        netherWorldButton = new Button(33, createItem(Material.NETHER_BRICK, netherWorldText));
+        netherWorldButton = new Button(33, createItem(Material.NETHERRACK, netherWorldText));
         endWorldButton = new Button(34, createItem(Material.END_STONE, endWorldText));
         dumpInfoButton = new BooleanButton(42, dumpInfo, (event, val) -> {
             dumpInfo = val;
@@ -215,11 +215,12 @@ public class StartMenu extends GameMenu {
             hunterSelectorButton.addAction(action -> {
                 List<Player> copyList = new ArrayList<>(includedPlayers);
                 copyList.remove(speedrunner);
-                PlayerSelectorMenu menu = new PlayerSelectorMenu("Hunter Selector", false, copyList, hunters);
-                menu.addOnClickToMainPage(event -> {
+                PlayerSelectorMenu menu = new PlayerSelectorMenu("Hunter Selector", copyList, hunters, false);
+                menu.setReturntoGui(StartMenu.this);
+                menu.addOnReturntoGui(event -> {
                     if (menu.getSelected().size() == copyList.size() + 1) {
                         event.getWhoClicked().sendMessage(ChatColor.RED + "All players are selected as hunters. Make sure to" +
-                                " deselect at least one players");
+                                " deselect at least one player");
                         return;
                     }
                     hunters = menu.getSelected();
@@ -234,11 +235,11 @@ public class StartMenu extends GameMenu {
             // included players selector
             includedSelectorButton.addAction(event -> {
                 List<Player> playersList = new ArrayList<>(Bukkit.getOnlinePlayers());
-                PlayerSelectorMenu menu = new PlayerSelectorMenu("Include/Exclude Players", false,
-                        playersList, includedPlayers);
+                PlayerSelectorMenu menu = new PlayerSelectorMenu("Include/Exclude Players", playersList, includedPlayers, false);
+                menu.setReturntoGui(StartMenu.this);
                 menu.setSelectMessage(ChatColor.GREEN + "Selected player");
-                menu.setUnselectedMessage(ChatColor.RED + "Excluded Player");
-                menu.addOnClickToMainPage(action -> {
+                menu.setDeselectMessage(ChatColor.RED + "Excluded Player");
+                menu.addOnReturntoGui(action -> {
                     if (includedPlayers.size() < 2) {
                         action.getWhoClicked().sendMessage(ChatColor.RED + "You need at least two players!");
                         return;
@@ -287,7 +288,7 @@ public class StartMenu extends GameMenu {
         private void addNetherSelectorFunction() {
             // nether world selector
             netherWorldButton.addAction(action -> {
-                WorldSelectorMenu menu = new WorldSelectorMenu("Nether Selector", StartMenu.this, Material.NETHER_BRICK,
+                WorldSelectorMenu menu = new WorldSelectorMenu("Nether Selector", StartMenu.this, Material.NETHERRACK,
                         ManhuntUtils.getNetherWorlds(), nether, Bukkit.getWorld("world_nether"));
                 menu.setSelectedMessage(ChatColor.GREEN + "Successfully selected world!");
                 menu.setUnselectedMsg(ChatColor.GREEN + "Successfully unselected world!");
@@ -296,7 +297,6 @@ public class StartMenu extends GameMenu {
                         StartMenu.this.nether = menu.getSelected();
                         netherWorldButton.setItem(ItemFactory.create(Material.NETHERRACK).setName(ChatColor.GREEN + "Nether: " + (menu.generateNew() &&
                                 menu.getSelected() == null ? "GENERATE NEW" : nether.getName().toUpperCase())).create());
-                        //display(event.getWhoClicked());
                     }
                 });
                 menu.display(action.getWhoClicked());
@@ -315,7 +315,7 @@ public class StartMenu extends GameMenu {
                         StartMenu.this.end = menu.getSelected();
                         endWorldButton.setItem(ItemFactory.create(Material.END_STONE)
                                 .setName(ChatColor.GREEN + "End: " + ((menu.generateNew() ? "" +
-                                        "GENERATE NEW" : world.getName().toUpperCase()))).create());
+                                        "GENERATE NEW" : end.getName().toUpperCase()))).create());
                         //display(event.getWhoClicked());
                     }
                 });
@@ -366,10 +366,10 @@ public class StartMenu extends GameMenu {
                 inclCopy.removeAll(hunters);
                 List<Player> sel = new ArrayList<>();
                 if (speedrunner != null) sel.add(speedrunner);
-                PlayerSelectorMenu menu = new PlayerSelectorMenu("Speedrunner Selector", true, inclCopy,
-                        sel);
-                menu.setUnselectedMessage(ChatColor.GREEN + "Unselected player.");
-                menu.addOnClickToMainPage((e) -> {
+                PlayerSelectorMenu menu = new PlayerSelectorMenu("Speedrunner Selector", inclCopy, sel, true);
+                menu.setDeselectMessage(ChatColor.GREEN + "Unselected player.");
+                menu.setReturntoGui(StartMenu.this);
+                menu.addOnReturntoGui((e) -> {
                     List<Player> selected = menu.getSelected();
                     if (selected.size() > 1)
                         e.getWhoClicked().sendMessage(ChatColor.RED + "You selected more than one speedrunner!");

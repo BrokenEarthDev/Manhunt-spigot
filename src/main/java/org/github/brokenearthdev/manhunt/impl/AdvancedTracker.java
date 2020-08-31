@@ -2,34 +2,33 @@ package org.github.brokenearthdev.manhunt.impl;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Effect;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.inventory.ItemStack;
 import org.github.brokenearthdev.manhunt.HunterTracker;
 import org.github.brokenearthdev.manhunt.ManhuntGame;
 import org.github.brokenearthdev.manhunt.ManhuntUtils;
 import org.github.brokenearthdev.manhunt.gui.ItemFactory;
-import org.github.brokenearthdev.manhunt.gui.buttons.BooleanButton;
 import org.github.brokenearthdev.manhunt.gui.buttons.Button;
+import org.github.brokenearthdev.manhunt.gui.game.CompassTrackingMenu;
 import org.github.brokenearthdev.manhunt.gui.menu.GameMenu;
+import org.github.brokenearthdev.manhunt.gui.menu.ListPaginatedMenu;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class AdvancedTracker implements HunterTracker {
 
     private final Player hunter;
     private final ManhuntGame game;
+    private final CompassTrackingMenu menu;
 
     private static final ItemStack COMPASS = ItemFactory.create(Material.COMPASS)
             .setName(COMPASS_NAME).setUnbreakable(true).create();
-
-    public AdvancedTracker(Player player, ManhuntGame game) {
-        this.hunter = player;
-        this.game = game;
-    }
+    private Location hunterPortalLocation = null;
 
     private boolean loc = true;
     private boolean distance = true;
@@ -37,15 +36,12 @@ public class AdvancedTracker implements HunterTracker {
     private boolean actionBar = true;
     private Player tracked;
     private Location lastPortalLocation = null;
-    private Location hunterPortalLocation;
 
-    @EventHandler
-    public void onPortal(PlayerPortalEvent event) {
-        if (game == null) return;
-        if (game.gameOngoing() && !game.gracePeriodOngoing()) {
-            if (event.getPlayer().equals(game.getSpeedrunner())) lastPortalLocation = event.getFrom();
-            if (event.getPlayer().equals(hunter)) hunterPortalLocation = event.getTo();
-        }
+    public AdvancedTracker(Player player, ManhuntGame game) {
+        this.hunter = player;
+        this.game = game;
+        this.tracked = game.getSpeedrunner();
+        this.menu = new CompassTrackingMenu(this);
     }
 
     public void setTrackedPortalLocation(Location sr) {
@@ -55,57 +51,6 @@ public class AdvancedTracker implements HunterTracker {
     public void setPersonalPortalLocation(Location hpl) {
         hunterPortalLocation = hpl;
     }
-
-//    @EventHandler
-//    public void onInteract(PlayerInteractEvent event) {
-//        ItemStack stack = event.getItem();
-//        if (!event.getPlayer().equals(hunter)) {
-//            if (game != null && stack != null && stack.getItemMeta() != null) {
-//                ItemMeta meta = stack.getItemMeta();
-//                if (game.gameOngoing() && !game.gracePeriodOngoing() && meta.getDisplayName().equals(COMPASS_NAME)
-//                        && stack.getType() == Material.COMPASS) {
-//                    openTrackingInterface();
-//                }
-//            }
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onSpawn(PlayerRespawnEvent event) {
-//        if (event.getPlayer().equals(hunter) && game != null && game.gameOngoing() && !game.gracePeriodOngoing()) {
-//            event.getPlayer().getInventory().addItem(COMPASS);
-//            updateTracker();
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onCollect(EntityPickupItemEvent event) {
-//        if (game == null) return;
-//        if (game.gameOngoing() && !game.gracePeriodOngoing() && event.getItem().getItemStack().hasItemMeta()) {
-//            String displayName = event.getItem().getItemStack().getItemMeta().getDisplayName();
-//            if (!event.getEntity().equals(hunter) && displayName.equalsIgnoreCase(COMPASS_NAME))
-//                event.setCancelled(true);
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onDrop(PlayerDropItemEvent event) {
-//        if (game.gameOngoing() && !game.gracePeriodOngoing() && event.getPlayer().equals(hunter) && autoCollect) {
-//            if (event.getItemDrop().getItemStack().getType() == Material.COMPASS) {
-//                ItemStack stack = event.getItemDrop().getItemStack();
-//                if (stack.getItemMeta() != null && stack.getItemMeta().getDisplayName().equals(COMPASS_NAME)) {
-//                    event.setCancelled(true);
-//                }
-//            }
-//        }
-//    }
-//
-//    @EventHandler
-//    public void onMove(PlayerMoveEvent event) {
-//        if (game.gameOngoing() && !game.gracePeriodOngoing() && (event.getPlayer().equals(hunter)) || event.getPlayer().equals(tracked)) {
-//            updateTracker();
-//        }
-//    }
 
     @Override
     public Player getHunter() {
@@ -117,141 +62,44 @@ public class AdvancedTracker implements HunterTracker {
         return game;
     }
 
-    private void openHuntersInterface() {
+    public void openHuntersInterface() {
         if (!game.gameOngoing() || game.gracePeriodOngoing()) return;
-        int slots = 9;
-        while (game.getHunters().size() >= slots) {
-            slots *= 2;
-            if (slots >= 54) {
-                slots = 54;
-                break;
-            }
-        }
-        GameMenu menu = new GameMenu("Hunters", slots / 9);
-        List<Player> gameHunters = game.getHunters();
-        for (int i = 0; i < gameHunters.size(); i++) {
-            if (!gameHunters.get(i).equals(hunter)) {
-                int finalI = i;
-                menu.setButton(new Button(i, ManhuntUtils.createPlayerHead(gameHunters.get(i),
-                        ChatColor.AQUA + gameHunters.get(i).getName())).addAction(e -> {
-                    setTracked(gameHunters.get(finalI));
-                    hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
-                }));
-            }
-        }
-        menu.setButton(new Button(slots - 1, ItemFactory.create(Material.ARROW).setName(ChatColor.GREEN + "Previous Page").create())
-                .addAction(e -> openTrackingInterface()));
-        menu.setScenery(ItemFactory.create(Material.RED_STAINED_GLASS_PANE).setName(" ").create());
-        menu.display(hunter);
+        ArrayList<Player> huntersCopy = new ArrayList<>(game.getHunters());
+        huntersCopy.remove(hunter);
+        ListPaginatedMenu<Player> listPaginatedMenu = new ListPaginatedMenu<>("Hunters",
+                huntersCopy, player -> ManhuntUtils.createPlayerHead(player, ChatColor.AQUA + player.getName()));
+        listPaginatedMenu.addOnItemClick(((player, event) -> {
+            setTracked(player);
+            hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
+            hunter.sendMessage(ChatColor.LIGHT_PURPLE + player.getName() + ChatColor.GREEN + " is now tracked!");
+        }));
+        listPaginatedMenu.setReturntoGui(menu);
+        listPaginatedMenu.display(hunter);
     }
+
 
     public void openTrackersInterface() {
         if (game.gracePeriodOngoing() || !game.gameOngoing()) return;
-        int slots = 9;
-        List<HunterTracker> trackers = game.getHunterTrackers();
-        while (trackers.size() >= slots) {
-            slots *= 2;
-            if (slots >= 54) {
-                slots = 54;
-                break;
-            }
+        List<HunterTracker> hunterTrackers = game.getHunterTrackers();
+        hunterTrackers.remove(this);
+        List<Player> trackers = new ArrayList<>();
+        hunterTrackers.forEach(h -> {
+            if (h.getTrackedPlayer().equals(hunter)) trackers.add(h.getHunter());
+        });
+        ListPaginatedMenu<Player> menu = new ListPaginatedMenu<>("Your Trackers",
+                trackers, (player) -> ManhuntUtils.createPlayerHead(player, ChatColor.AQUA + player.getName()));
+        List<GameMenu> gameMenus = menu.getPages();
+        if (gameMenus.size() != 0) {
+            GameMenu gameMenu = gameMenus.get(0);
+            gameMenu.setButton(new Button(menu.getSize() - 9, ItemFactory.create(Material.ARROW).setName(ChatColor.GREEN + "Go Back").create())
+                    .addAction(e -> openTrackingInterface()));
         }
-        GameMenu menu = new GameMenu("Your Trackers", slots / 9);
-        for (int i = 0; i < trackers.size(); i++) {
-            if (!trackers.get(i).getHunter().equals(hunter) && Objects.equals(hunter, trackers.get(i).getTrackedPlayer())) {
-                menu.setButton(new Button(i, ManhuntUtils.createPlayerHead(trackers.get(i).getHunter(), ChatColor.AQUA + trackers.get(i).getHunter().getName())));
-            }
-        }
-        menu.setButton(new Button(slots - 1, ItemFactory.create(Material.ARROW).setName(ChatColor.GREEN + "Previous Page").create())
-                .addAction(e -> openTrackingInterface()));
-        menu.setScenery(ItemFactory.create(Material.RED_STAINED_GLASS_PANE).setName(" ").create());
         menu.display(hunter);
     }
 
     @Override
     public void openTrackingInterface() {
         if (!game.gameOngoing() || game.gracePeriodOngoing()) return;
-        GameMenu menu = new GameMenu("Tracker Settings", 6);
-        menu.setButton(new Button(4, ItemFactory.create(Material.COMPASS).setName(ChatColor.YELLOW +
-                "Tracking Settings").create()));
-        menu.setButton(new Button(19, ItemFactory.create(ManhuntUtils.createPlayerHead(game.getHunters().get(0),
-                ChatColor.GREEN + "Track Hunter(s)")).addLoreLine(ChatColor.GREEN + "Potential Hunter(s) Include(s): "
-                + ChatColor.RED + ManhuntUtils.potentialHunterNames(game, hunter)).create()).addAction((e) -> {
-            this.openHuntersInterface();
-        }));
-        String text2 = game.getSpeedrunner().equals(tracked) ? ChatColor.RED + "You're Already Tracking a Speedrunner"
-                : ChatColor.GREEN + "Track Speedrunner";
-        menu.setButton(new Button(20, ManhuntUtils.createPlayerHead(tracked, text2)).addAction(e -> {
-            if (game.getSpeedrunner().equals(tracked)) {
-                hunter.sendMessage(ChatColor.RED + "The speedrunner is already being tracked!");
-                hunter.playSound(hunter.getLocation(), Sound.ENTITY_SKELETON_DEATH, 100, 100);
-            } else {
-                setTracked(game.getSpeedrunner());
-                hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
-                e.setCurrentItem(ManhuntUtils.createPlayerHead(tracked, ChatColor.RED + "You're Already Tracking a Speedrunner"));
-            }
-        }));
-        String text3 = tracked == null ? ChatColor.RED + "You're Already Tracking Spawn" : ChatColor.GREEN + "Track Spawn";
-        menu.setButton(new Button(21, ItemFactory.create(Material.GHAST_SPAWN_EGG).setName(text3).create())
-                .addAction(e -> {
-                    if (!loc) {
-                        hunter.sendMessage(ChatColor.RED + "Please track location first, and not health!");
-                        hunter.playSound(hunter.getLocation(), Sound.ENTITY_SKELETON_DEATH, 100, 100);
-                    } else {
-                        if (tracked == null) {
-                            hunter.sendMessage(ChatColor.RED + "You're already tracking spawn!");
-                            hunter.playSound(hunter.getLocation(), Sound.ENTITY_SKELETON_DEATH, 100, 100);
-                        } else {
-                            e.setCurrentItem(ItemFactory.create(Material.GHAST_SPAWN_EGG)
-                                    .setName(ChatColor.RED + "You're Already Tracking Spawn").create());
-                            setTrackSpawn();
-                            hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
-                        }
-                    }
-                }));
-        menu.setButton(new BooleanButton(23, actionBar, (event, change) -> {
-            actionBar = change;
-            hunter.sendMessage(change ? ChatColor.GREEN + "You can now see info in the actionbar" :
-                    ChatColor.RED + "You can't see info in the actionbar");
-            hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
-        }, ItemFactory.create(Material.REDSTONE_TORCH)
-                .setName(ChatColor.GREEN + "Actionbar: ENABLED").addGlowEffect(true).create(), ItemFactory.create(Material.LEVER)
-                .setName(ChatColor.RED + "Actionbar: DISABLED").create()));
-
-
-        menu.setButton(new BooleanButton(24, loc, (event, change) -> {
-            loc = change;
-            if (loc) hunter.sendMessage(ChatColor.GREEN + "Tracking location");
-            else hunter.sendMessage(ChatColor.GREEN + "Tracking health");
-            hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
-        }, ItemFactory.create(Material.ARROW)
-                .setName(ChatColor.RED + "Tracked: location").create(), ItemFactory.create(Material.APPLE)
-                .setName(ChatColor.GREEN + "Tracked: health").create()));
-
-        menu.setButton(new BooleanButton(25, autoCollect, (event, aBoolean) -> {
-            autoCollect = aBoolean;
-            hunter.sendMessage(ChatColor.GREEN + "Auto collect has been " + (aBoolean ? "enabled" : "disabled"));
-            hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
-        }, ItemFactory.create(
-                Material.DIAMOND_PICKAXE).setName(ChatColor.GREEN + "Auto Collect: ENABLED").addGlowEffect(true).create(),
-                ItemFactory.create(Material.WOODEN_PICKAXE).setName(ChatColor.RED + "Auto Collect: DISABLED")
-                        .create()));
-
-        menu.setButton(new BooleanButton(28, distance, (event, aBoolean) -> {
-            distance = aBoolean;
-            hunter.sendMessage(ChatColor.GREEN + "Tracking " + (aBoolean ? "distance" : "coordinates"));
-            hunter.playEffect(hunter.getLocation(), Effect.CLICK2, null);
-        }, ItemFactory.create(Material.RAIL)
-                .setName(ChatColor.GREEN + "Location Tracked: DISTANCE").create(), ItemFactory.create(Material.MAP)
-                .setName(ChatColor.GREEN + "Location Tracked: COORDINATES").create()));
-        menu.setButton(new Button(33, ItemFactory.create(Material.BOW).setName(ChatColor.GREEN + "Your Trackers").create())
-                .addAction(event -> openTrackersInterface()));
-        ItemStack redGlass = ManhuntUtils.redGlass();
-        menu.setButton(new Button(29, redGlass));
-        menu.setButton(new Button(30, redGlass));
-        menu.setButton(new Button(32, redGlass));
-        menu.setButton(new Button(34, redGlass));
-        //  menu.setScenery(ItemFactory.create(Material.BLACK_STAINED_GLASS_PANE).setName(" ").create());
         menu.display(hunter);
     }
 
@@ -277,6 +125,11 @@ public class AdvancedTracker implements HunterTracker {
     }
 
     @Override
+    public boolean isIncludeInfoAtActionbar() {
+        return actionBar;
+    }
+
+    @Override
     public void setTrackSpawn() {
         tracked = null;
     }
@@ -294,6 +147,11 @@ public class AdvancedTracker implements HunterTracker {
     @Override
     public boolean isAutoCollect() {
         return autoCollect;
+    }
+
+    @Override
+    public void setIncludeInfoAtActionbar(boolean include) {
+        actionBar = include;
     }
 
     @Override

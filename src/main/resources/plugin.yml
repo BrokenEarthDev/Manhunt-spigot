@@ -16,7 +16,7 @@ commands:
   mhtracker:
     usage: /<command>
     description: gives a tracker to the hunter if, for some reason, the hunter doesn't have a compass
-  mhtp:
+  mhworld:
     usage: /<command>
     description: teleports players to a world with the specified type
 

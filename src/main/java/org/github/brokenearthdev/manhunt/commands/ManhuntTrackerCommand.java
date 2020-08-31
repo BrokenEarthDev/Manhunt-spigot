@@ -34,7 +34,7 @@ public class ManhuntTrackerCommand extends ManhuntCommand {
             }
             ItemStack[] contents = player.getInventory().getContents();
             for (ItemStack item : contents) {
-                if (item.hasItemMeta()) {
+                if (item != null && item.hasItemMeta()) {
                     String displayName = item.getItemMeta().getDisplayName();
                     if (displayName.equalsIgnoreCase(HunterTracker.COMPASS_NAME)) {
                         player.sendMessage(ChatColor.RED + "You already have a tracker in your inventory!");
