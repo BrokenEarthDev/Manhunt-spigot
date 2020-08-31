@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.MemorySection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.github.brokenearthdev.manhunt.gui.ItemFactory;
 
@@ -15,6 +16,42 @@ import java.io.File;
 import java.util.*;
 
 public class ManhuntUtils {
+
+    /**
+     * @param game The game object
+     * @return Whether the tracker is used at a time where it is allowed or not
+     */
+    public static boolean gameCheck(ManhuntGame game) {
+        return game != null && game.gameOngoing() && !game.gracePeriodOngoing() && game.getOptions().allowTrackers();
+    }
+
+    /**
+     * @param game   The game
+     * @param player The player
+     * @return Whether the game is running and the player has a tracker or not
+     */
+    public static boolean hasTracker(ManhuntGame game, Player player) {
+        if (gameCheck(game)) {
+            ItemStack[] items = player.getInventory().getContents();
+            for (ItemStack stack : items) {
+                if (isTracker(stack)) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param stack The item to check
+     * @return Whether the item is a tracker or not
+     */
+    public static boolean isTracker(ItemStack stack) {
+        if (stack == null) return false;
+        if (stack.getItemMeta() != null) {
+            ItemMeta meta = stack.getItemMeta();
+            return stack.getType() == Material.COMPASS && meta.getDisplayName().equals(HunterTracker.COMPASS_NAME);
+        }
+        return false;
+    }
 
     public static String potentialHunterNames(ManhuntGame game, Player compassOwner) {
         List<Player> hun = game.getHunters();

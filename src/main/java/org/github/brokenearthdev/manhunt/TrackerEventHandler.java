@@ -1,6 +1,5 @@
 package org.github.brokenearthdev.manhunt;
 
-import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -12,46 +11,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.github.brokenearthdev.manhunt.impl.AdvancedTracker;
 
+import static org.github.brokenearthdev.manhunt.ManhuntUtils.*;
+
 /**
  * An event handler for trackers
  */
 public class TrackerEventHandler implements Listener {
-
-    /**
-     * @param game The game object
-     * @return Whether the tracker is used at a time where it is allowed or not
-     */
-    private static boolean gameCheck(ManhuntGame game) {
-        return game != null && game.gameOngoing() && !game.gracePeriodOngoing() && game.getOptions().allowTrackers();
-    }
-
-    /**
-     * @param game   The game
-     * @param player The player
-     * @return Whether the game is running and the player has a tracker or not
-     */
-    private static boolean hasTracker(ManhuntGame game, Player player) {
-        if (gameCheck(game)) {
-            ItemStack[] items = player.getInventory().getContents();
-            for (ItemStack stack : items) {
-                if (isTracker(stack)) return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param stack The item to check
-     * @return Whether the item is a tracker or not
-     */
-    private static boolean isTracker(ItemStack stack) {
-        if (stack == null) return false;
-        if (stack.getItemMeta() != null) {
-            ItemMeta meta = stack.getItemMeta();
-            return stack.getType() == Material.COMPASS && meta.getDisplayName().equals(HunterTracker.COMPASS_NAME);
-        }
-        return false;
-    }
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {

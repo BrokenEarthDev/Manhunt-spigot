@@ -26,6 +26,7 @@ public class GameCreator {
     private boolean genWorld, genNether, genEnd;
     private int maxPlayersCount;
     private int minPlayersCount;
+    private final int gracePeriodInit;
 
     public GameCreator(GameOptions options) {
         gracePeriod = options.gracePeriodEnabled() ? options.gracePeriodSeconds() : 0;
@@ -38,6 +39,7 @@ public class GameCreator {
                 options.getMinimumPlayersCount() ? Integer.MAX_VALUE - 1 : options.getMaxPlayersCount();
         minPlayersCount = options.getMinimumPlayersCount() < 2 || options.getMinimumPlayersCount() >
                 options.getMaxPlayersCount() ? 2 : options.getMinimumPlayersCount();
+        gracePeriodInit = gracePeriod;
     }
 
     public GameCreator() {
@@ -97,7 +99,8 @@ public class GameCreator {
      * @return This object
      */
     public GameCreator disableGracePeriod(boolean disable) {
-        setGracePeriod(0);
+        if (disable) setGracePeriod(0);
+        else setGracePeriod(gracePeriodInit);
         return this;
     }
 

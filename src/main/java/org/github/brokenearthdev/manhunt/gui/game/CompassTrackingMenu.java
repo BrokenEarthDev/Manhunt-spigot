@@ -8,6 +8,7 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.github.brokenearthdev.manhunt.ManhuntGame;
+import org.github.brokenearthdev.manhunt.ManhuntPlugin;
 import org.github.brokenearthdev.manhunt.ManhuntUtils;
 import org.github.brokenearthdev.manhunt.gui.ItemFactory;
 import org.github.brokenearthdev.manhunt.gui.buttons.BooleanButton;
@@ -158,7 +159,10 @@ public class CompassTrackingMenu extends GameMenu {
 
         private void addTrackHuntersFunction() {
             trackHuntersButton.addAction(action -> {
-                CompassTrackingMenu.this.tracker.openHuntersInterface();
+                ManhuntGame game = CompassTrackingMenu.this.tracker.getGame();
+                if (ManhuntUtils.gameCheck(game) && game.getHunters().size() > 1) {
+                    CompassTrackingMenu.this.tracker.openHuntersInterface();
+                }
             });
         }
 
@@ -206,7 +210,12 @@ public class CompassTrackingMenu extends GameMenu {
         }
 
         private void addTrackersInterfaceFunction() {
-            trackersInterfaceButton.addAction(event -> tracker.openTrackersInterface());
+            trackersInterfaceButton.addAction(event -> {
+                ManhuntGame game = ManhuntPlugin.getInstance().getRunningGame();
+                if (ManhuntUtils.gameCheck(game) && game.getHunters().size() > 1) {
+                    tracker.openTrackersInterface();
+                }
+            });
         }
 
     }

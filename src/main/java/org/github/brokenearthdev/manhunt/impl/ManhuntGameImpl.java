@@ -56,13 +56,19 @@ public class ManhuntGameImpl implements ManhuntGame {
 
     @Override
     public HunterTracker getTrackerFor(Player player) {
-        HunterTracker tracker = null;
-        for (HunterTracker tracker1 : trackers)
-            if (tracker1.getHunter().equals(player)) {
-                tracker = tracker1;
-                break;
+        for (HunterTracker tracker : trackers)
+            if (tracker.getHunter().getUniqueId().equals(player.getUniqueId())) {
+                return tracker;
             }
-        return tracker;
+        if (getHunters().contains(player) && options.allowTrackers()) {
+            // something's wrong
+            ManhuntPlugin.getInstance().getLogger().warning("For some reason, can't find tracker for " + player.getName());
+            ManhuntPlugin.getInstance().getLogger().info("Creating tracker for player ...");
+            AdvancedTracker tracker = new AdvancedTracker(player, this);
+            trackers.add(tracker);
+            if (!ManhuntUtils.hasTracker(this, player)) tracker.giveCompass();
+        }
+        return null;
     }
 
     @Override
