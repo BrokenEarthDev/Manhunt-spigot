@@ -60,14 +60,13 @@ public class ManhuntGameImpl implements ManhuntGame {
             if (tracker.getHunter().getUniqueId().equals(player.getUniqueId())) {
                 return tracker;
             }
-        if (getHunters().contains(player) && options.allowTrackers()) {
-            // something's wrong
-            ManhuntPlugin.getInstance().getLogger().warning("For some reason, can't find tracker for " + player.getName());
-            ManhuntPlugin.getInstance().getLogger().info("Creating tracker for player ...");
-            AdvancedTracker tracker = new AdvancedTracker(player, this);
-            trackers.add(tracker);
-            if (!ManhuntUtils.hasTracker(this, player)) tracker.giveCompass();
-        }
+//        if (getHunters().contains(player) && options.allowTrackers()) {
+//            // something's wrong
+//            ManhuntPlugin.getInstance().getLogger().warning("For some reason, can't find tracker for " + player.getName());
+//            ManhuntPlugin.getInstance().getLogger().info("Creating tracker for player ...");
+//            AdvancedTracker tracker = new AdvancedTracker(player, this);
+//            trackers.add(tracker);
+//        }
         return null;
     }
 
@@ -100,10 +99,8 @@ public class ManhuntGameImpl implements ManhuntGame {
             });
             int random = new Random().nextInt(candidates.size());
             speedRunner = inclPlayers.get(random);
-            if (hunters.size() == 0) {
-                candidates.remove(speedRunner);
-                hunters = candidates;
-            }
+            candidates.remove(speedRunner);
+            hunters = candidates;
             this.speedrunner = speedRunner;
         }
     }
